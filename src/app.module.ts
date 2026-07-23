@@ -15,6 +15,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { GoalsModule } from './modules/goals/goals.module';
+import { HealthModule } from './modules/health/health.module';
 import { ImportExportModule } from './modules/import-export/import-export.module';
 import { InvestmentsModule } from './modules/investments/investments.module';
 import { RecurrencesModule } from './modules/recurrences/recurrences.module';
@@ -42,6 +43,7 @@ import { UsersModule } from './modules/users/users.module';
       ],
     }),
     PrismaModule,
+    HealthModule,
     AuthModule,
     UsersModule,
     CategoriesModule,

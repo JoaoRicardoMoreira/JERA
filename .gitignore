@@ -27,6 +27,8 @@ apps/mobile/android/app/.cxx/
 .env
 .env.local
 .env.*.local
+!.env.example
+!apps/web/.env.example
 
 *.log
 npm-debug.log*
