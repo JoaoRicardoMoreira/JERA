@@ -1,0 +1,89 @@
+<div *ngIf="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 backdrop-blur-sm">
+  <div class="max-h-[92vh] w-full max-w-3xl overflow-hidden rounded-[1.75rem] border border-white/8 bg-[#090909]">
+    <div class="flex items-start justify-between border-b border-white/5 px-7 py-6">
+      <div>
+        <p class="text-xs font-medium uppercase tracking-[0.38em] text-zinc-500">Recorrentes</p>
+        <h3 class="mt-2 text-2xl font-bold text-white">Gerenciar recorrencias</h3>
+      </div>
+      <button type="button" (click)="close.emit()" class="fc-button fc-button-ghost !min-h-9 !p-2" aria-label="Fechar">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="max-h-[calc(92vh-96px)] overflow-y-auto px-7 py-7 custom-scrollbar">
+      <form class="space-y-5" (ngSubmit)="submit()">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <label class="block">
+            <span class="mb-2 block text-xs font-medium uppercase tracking-[0.28em] text-zinc-500">Tipo</span>
+            <select [(ngModel)]="form.type" name="recType" class="fc-field w-full px-4" (ngModelChange)="onTypeChange($event)">
+              <option value="gasto">Gasto Recorrente</option>
+              <option value="renda">Renda Recorrente</option>
+            </select>
+          </label>
+          <label class="block">
+            <span class="mb-2 block text-xs font-medium uppercase tracking-[0.28em] text-zinc-500">Descricao</span>
+            <input type="text" [(ngModel)]="form.desc" name="recDesc" required placeholder="Ex: Netflix, Salario..." class="fc-field w-full px-4" />
+          </label>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <label class="block">
+            <span class="mb-2 block text-xs font-medium uppercase tracking-[0.28em] text-zinc-500">Valor</span>
+            <input type="number" [(ngModel)]="form.valor" name="recValor" step="0.01" required class="fc-field w-full px-4" />
+          </label>
+          <label class="block">
+            <span class="mb-2 block text-xs font-medium uppercase tracking-[0.28em] text-zinc-500">Dia</span>
+            <input type="number" [(ngModel)]="form.dia" name="recDia" min="1" max="31" required class="fc-field w-full px-4" />
+          </label>
+          <label class="block">
+            <span class="mb-2 block text-xs font-medium uppercase tracking-[0.28em] text-zinc-500">Categoria</span>
+            <select [(ngModel)]="form.categoryId" name="recCategoryId" class="fc-field w-full px-4">
+              <option value="">Sem categoria</option>
+              <option *ngFor="let cat of recurrenceCategories" [value]="cat.id">{{ cat.name }}</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="grid grid-cols-1 gap-3 pt-2 sm:grid-cols-[1fr_auto]">
+          <button type="submit" [disabled]="disabled" class="fc-button fc-button-investment !min-h-12">
+            Salvar Recorrencia
+          </button>
+          <button type="button" [disabled]="disabled" (click)="process.emit()" class="fc-button fc-button-secondary !min-h-12">
+            Processar periodo
+          </button>
+        </div>
+      </form>
+
+      <div class="mt-8 border-t border-white/5 pt-7">
+        <div class="mb-4 flex items-center justify-between gap-3">
+          <h4 class="text-xs font-medium uppercase tracking-[0.34em] text-zinc-500">Recorrencias ativas</h4>
+          <span class="text-xs text-zinc-600">{{ recorrentes.length }} itens</span>
+        </div>
+
+        <div class="space-y-3">
+          <div *ngFor="let rec of recorrentes" class="flex items-center justify-between gap-5 rounded-2xl border border-white/8 bg-white/[0.018] px-5 py-4">
+            <div class="flex min-w-0 items-center gap-4">
+              <span [class]="rec.type === 'renda' ? 'h-2 w-2 rounded-full bg-emerald-400' : 'h-2 w-2 rounded-full bg-zinc-600'"></span>
+              <div class="min-w-0">
+                <p class="truncate text-sm font-semibold text-white">{{ rec.desc }}</p>
+                <p class="mt-1 text-xs text-zinc-500">
+                  Dia {{ rec.dia }} · {{ rec.valor | currency:'BRL':'symbol':'1.2-2':'pt' }}
+                  <span *ngIf="rec.categoria">· {{ rec.categoria }}</span>
+                </p>
+              </div>
+            </div>
+            <button *ngIf="rec.id" type="button" (click)="delete.emit(rec.id)" class="text-xs text-zinc-600 transition hover:text-rose-400">
+              Excluir
+            </button>
+          </div>
+
+          <div *ngIf="recorrentes.length === 0" class="rounded-2xl border border-white/8 px-5 py-8 text-center text-sm text-zinc-500">
+            Nenhuma recorrencia ativa.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

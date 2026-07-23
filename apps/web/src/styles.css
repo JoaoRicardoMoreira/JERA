@@ -1,0 +1,248 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --fc-bg: #09090b;
+  --fc-bg-soft: #0c0c0f;
+  --fc-surface: rgba(24, 24, 27, 0.88);
+  --fc-surface-muted: rgba(39, 39, 42, 0.56);
+  --fc-surface-subtle: rgba(255, 255, 255, 0.035);
+  --fc-border: rgba(255, 255, 255, 0.08);
+  --fc-border-strong: rgba(255, 255, 255, 0.12);
+  --fc-text: #f4f4f5;
+  --fc-text-muted: #a1a1aa;
+  --fc-text-subtle: #71717a;
+  --fc-text-disabled: #52525b;
+  --fc-income: #34d399;
+  --fc-expense: #fb7185;
+  --fc-investment: #a78bfa;
+  --fc-info: #60a5fa;
+  --fc-warning: #fbbf24;
+  --fc-radius-sm: 0.5rem;
+  --fc-radius-md: 0.75rem;
+  --fc-radius-lg: 1rem;
+  --fc-shadow-surface: 0 18px 40px -26px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --fc-transition: 160ms ease;
+}
+
+body {
+  min-height: 100vh;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--fc-bg);
+  color: var(--fc-text);
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid rgba(52, 211, 153, 0.72);
+  outline-offset: 2px;
+}
+
+.fc-shell,
+.deep-shell {
+  background:
+    radial-gradient(circle at 80% 0%, rgba(16, 185, 129, 0.055), transparent 28rem),
+    radial-gradient(circle at 18% 18%, rgba(167, 139, 250, 0.035), transparent 26rem),
+    var(--fc-bg);
+}
+
+.fc-surface,
+.deep-card {
+  background: var(--fc-surface) !important;
+  border: 1px solid var(--fc-border) !important;
+  border-radius: var(--fc-radius-lg);
+  box-shadow: var(--fc-shadow-surface);
+  backdrop-filter: blur(10px);
+}
+
+.fc-surface-muted {
+  background: var(--fc-surface-muted) !important;
+  border: 1px solid var(--fc-border) !important;
+  border-radius: var(--fc-radius-md);
+}
+
+.fc-field,
+.deep-input {
+  min-height: 2.75rem;
+  background: rgba(9, 9, 11, 0.68) !important;
+  border: 1px solid var(--fc-border-strong) !important;
+  border-radius: var(--fc-radius-md);
+  color: #e4e4e7 !important;
+  outline: none;
+  transition: border-color var(--fc-transition), box-shadow var(--fc-transition), background var(--fc-transition);
+}
+
+.fc-field:hover,
+.deep-input:hover {
+  background: rgba(9, 9, 11, 0.82) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+.fc-field:focus,
+.deep-input:focus {
+  border-color: rgba(52, 211, 153, 0.5) !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.18);
+}
+
+.fc-button {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--fc-radius-md);
+  border: 1px solid var(--fc-border);
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  transition: background var(--fc-transition), border-color var(--fc-transition), color var(--fc-transition), transform var(--fc-transition);
+}
+
+.fc-button:hover {
+  transform: translateY(-1px);
+}
+
+.fc-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+}
+
+.fc-button-primary {
+  background: rgba(16, 185, 129, 0.16);
+  border-color: rgba(52, 211, 153, 0.34);
+  color: var(--fc-income);
+}
+
+.fc-button-primary:hover {
+  background: rgba(16, 185, 129, 0.24);
+}
+
+.fc-button-secondary {
+  background: rgba(255, 255, 255, 0.045);
+  border-color: var(--fc-border);
+  color: #d4d4d8;
+}
+
+.fc-button-secondary:hover {
+  background: rgba(255, 255, 255, 0.075);
+  border-color: var(--fc-border-strong);
+}
+
+.fc-button-danger {
+  background: rgba(244, 63, 94, 0.18);
+  border-color: rgba(251, 113, 133, 0.34);
+  color: var(--fc-expense);
+}
+
+.fc-button-danger:hover {
+  background: rgba(244, 63, 94, 0.26);
+}
+
+.fc-button-investment {
+  background: rgba(139, 92, 246, 0.18);
+  border-color: rgba(167, 139, 250, 0.36);
+  color: var(--fc-investment);
+}
+
+.fc-button-investment:hover {
+  background: rgba(139, 92, 246, 0.28);
+}
+
+.fc-button-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--fc-text-muted);
+}
+
+.fc-button-ghost:hover {
+  background: rgba(255, 255, 255, 0.055);
+  color: var(--fc-text);
+}
+
+.fc-table-head,
+.deep-table-head {
+  background: rgba(255, 255, 255, 0.045) !important;
+  color: var(--fc-text-muted);
+}
+
+.fc-table-row {
+  transition: background var(--fc-transition);
+}
+
+.fc-table-row:hover {
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.fc-tab-active,
+.deep-tab-active {
+  background: rgba(16, 185, 129, 0.08) !important;
+  border-color: var(--fc-income) !important;
+  color: var(--fc-income) !important;
+}
+
+.fc-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--fc-border);
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.fc-pill-success {
+  border-color: rgba(52, 211, 153, 0.24);
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--fc-income);
+}
+
+.fc-pill-danger {
+  border-color: rgba(251, 113, 133, 0.24);
+  background: rgba(244, 63, 94, 0.1);
+  color: var(--fc-expense);
+}
+
+.fc-pill-warning {
+  border-color: rgba(251, 191, 36, 0.24);
+  background: rgba(251, 191, 36, 0.1);
+  color: var(--fc-warning);
+}
+
+.fc-pill-investment {
+  border-color: rgba(167, 139, 250, 0.3);
+  background: rgba(139, 92, 246, 0.12);
+  color: var(--fc-investment);
+}
+
+.fc-progress-track {
+  overflow: hidden;
+  border: 1px solid var(--fc-border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--fc-bg);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 10px;
+}

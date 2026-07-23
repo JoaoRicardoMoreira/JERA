@@ -1,0 +1,84 @@
+<div class="fc-surface overflow-hidden">
+  <div class="flex border-b border-white/5 bg-white/[0.025]">
+    <button
+      (click)="switchTab('gastos')"
+      [class]="activeTab === 'gastos' ? 'fc-tab-active flex-1 py-4 text-sm font-bold border-b-2' : 'flex-1 py-4 text-sm font-bold border-b-2 border-transparent text-zinc-400 hover:bg-white/5 transition'"
+    >
+      GASTOS
+    </button>
+    <button
+      (click)="switchTab('rendas')"
+      [class]="activeTab === 'rendas' ? 'fc-tab-active flex-1 py-4 text-sm font-bold border-b-2' : 'flex-1 py-4 text-sm font-bold border-b-2 border-transparent text-zinc-400 hover:bg-white/5 transition'"
+    >
+      RENDAS
+    </button>
+  </div>
+
+  <div [class]="activeTab === 'gastos' ? 'block' : 'hidden'">
+    <div class="max-h-[400px] overflow-x-auto custom-scrollbar">
+      <table class="w-full text-left">
+        <thead class="fc-table-head text-xs uppercase">
+          <tr>
+            <th class="px-6 py-3">Data</th>
+            <th class="px-6 py-3">Descricao</th>
+            <th class="px-6 py-3">Categoria</th>
+            <th class="px-6 py-3 text-right">Valor</th>
+            <th class="px-6 py-3 text-center">Acoes</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-white/5">
+          <tr *ngFor="let gasto of sortedGastos()" class="fc-table-row">
+            <td class="px-6 py-4 text-sm text-zinc-300">{{ gasto.g.data | date:'dd/MM/yyyy' }}</td>
+            <td class="px-6 py-4 text-sm font-medium text-zinc-100">{{ gasto.g.desc }}</td>
+            <td class="px-6 py-4">
+              <span class="fc-pill text-zinc-300">{{ gasto.g.categoria }}</span>
+            </td>
+            <td class="px-6 py-4 text-right text-sm font-bold text-rose-400">{{ currency(gasto.g.valor) }}</td>
+            <td class="px-6 py-4 text-center">
+              <button *ngIf="gasto.g.id" type="button" (click)="deleteGasto.emit(gasto.g.id)" class="fc-button fc-button-ghost !min-h-8 !p-2 text-zinc-500 hover:text-rose-400" title="Excluir gasto">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="sortedGastos().length === 0">
+            <td colspan="5" class="px-6 py-12 text-center text-sm text-zinc-500">Nenhum gasto neste periodo</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div [class]="activeTab === 'rendas' ? 'block' : 'hidden'">
+    <div class="max-h-[400px] overflow-x-auto custom-scrollbar">
+      <table class="w-full text-left">
+        <thead class="fc-table-head text-xs uppercase">
+          <tr>
+            <th class="px-6 py-3">Data</th>
+            <th class="px-6 py-3">Descricao</th>
+            <th class="px-6 py-3 text-right">Valor</th>
+            <th class="px-6 py-3 text-center">Acoes</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-white/5">
+          <tr *ngFor="let renda of sortedRendas()" class="fc-table-row">
+            <td class="px-6 py-4 text-sm text-zinc-300">{{ renda.r.data | date:'dd/MM/yyyy' }}</td>
+            <td class="px-6 py-4 text-sm font-medium text-zinc-100">{{ renda.r.desc }}</td>
+            <td class="px-6 py-4 text-right text-sm font-bold text-emerald-400">{{ currency(renda.r.valor) }}</td>
+            <td class="px-6 py-4 text-center">
+              <button *ngIf="renda.r.id" type="button" (click)="deleteRenda.emit(renda.r.id)" class="fc-button fc-button-ghost !min-h-8 !p-2 text-zinc-500 hover:text-rose-400" title="Excluir renda">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="sortedRendas().length === 0">
+            <td colspan="4" class="px-6 py-12 text-center text-sm text-zinc-500">Nenhuma renda neste periodo</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

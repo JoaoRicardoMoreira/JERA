@@ -1,0 +1,8 @@
+export const APP_CONSTANTS = {
+  DEFAULT_API_PREFIX: '/api/v1',
+  DEFAULT_PORT: 3000,
+  DEFAULT_PAGE: 1,
+  DEFAULT_PAGE_LIMIT: 20,
+  MAX_PAGE_LIMIT: 100,
+  REQUEST_ID_HEADER: 'x-request-id',
+} as const;

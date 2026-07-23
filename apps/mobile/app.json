@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "Jera",
+    "slug": "jera-mobile",
+    "scheme": "jera",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": false
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#09090b"
+      },
+      "package": "com.jera.mobile"
+    },
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

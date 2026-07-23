@@ -1,0 +1,54 @@
+<section class="overflow-hidden rounded-[1.75rem] border border-white/8 bg-[#090909]">
+  <div class="flex items-start justify-between border-b border-white/5 px-7 py-6">
+    <div>
+      <p class="text-xs font-medium uppercase tracking-[0.38em] text-zinc-500">Novo gasto</p>
+      <h3 class="mt-2 text-2xl font-bold text-white">Adicionar lançamento</h3>
+    </div>
+    <span class="grid h-10 w-10 place-items-center rounded-full bg-white/[0.04] text-rose-300">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+          clip-rule="evenodd"
+        />
+      </svg>
+    </span>
+  </div>
+
+  <form class="space-y-5 px-7 py-7" (ngSubmit)="submit()">
+    <div>
+      <label class="mb-2 block text-xs font-medium uppercase tracking-[0.28em] text-zinc-500">Descricao</label>
+      <input
+        type="text"
+        [(ngModel)]="form.desc"
+        name="desc"
+        required
+        placeholder="Ex: Supermercado"
+        class="fc-field w-full px-4"
+      />
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div>
+        <label class="mb-2 block text-xs font-medium uppercase tracking-[0.28em] text-zinc-500">Valor</label>
+        <input type="number" name="valor" [(ngModel)]="form.valor" step="0.01" required class="fc-field w-full px-4" />
+      </div>
+      <div>
+        <label class="mb-2 block text-xs font-medium uppercase tracking-[0.28em] text-zinc-500">Data</label>
+        <input type="date" name="data" [(ngModel)]="form.data" required class="fc-field w-full px-4 text-sm" />
+      </div>
+    </div>
+
+    <div>
+      <label class="mb-2 block text-xs font-medium uppercase tracking-[0.28em] text-zinc-500">Categoria</label>
+      <select name="categoryId" [(ngModel)]="form.categoryId" class="fc-field w-full px-4">
+        <option value="">Selecione</option>
+        <option *ngFor="let cat of expenseCategories" [value]="cat.id">{{ cat.name }}</option>
+      </select>
+    </div>
+
+    <button type="submit" [disabled]="disabled" class="fc-button fc-button-danger mt-3 w-full !min-h-12">
+      Adicionar Gasto
+    </button>
+  </form>
+</section>

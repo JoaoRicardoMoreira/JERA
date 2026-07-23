@@ -1,0 +1,54 @@
+<header class="mb-8 flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+  <div class="min-w-0">
+    <h1 class="bg-gradient-to-r from-emerald-300 via-emerald-400 to-teal-400 bg-clip-text text-3xl font-bold text-transparent">
+      Jera
+    </h1>
+    <p class="mt-1 max-w-md text-sm text-zinc-400">Gerencie suas financas de forma simples e eficiente</p>
+  </div>
+
+  <div class="flex flex-wrap items-center gap-2 xl:justify-end">
+    <div class="fc-surface-muted flex min-h-10 items-center overflow-hidden p-1">
+      <select
+        [ngModel]="month"
+        (ngModelChange)="monthChange.emit($event)"
+        class="h-8 bg-transparent px-3 text-sm text-zinc-200 outline-none cursor-pointer hover:text-white border-r border-white/10"
+      >
+        <option [ngValue]="'all'" class="bg-zinc-950 text-zinc-200">Todos os Meses</option>
+        <option *ngFor="let m of months; index as i" [ngValue]="i" class="bg-zinc-950 text-zinc-200">{{ m }}</option>
+      </select>
+      <select
+        [ngModel]="year"
+        (ngModelChange)="yearChange.emit($event)"
+        class="h-8 bg-transparent px-3 text-sm text-zinc-200 outline-none cursor-pointer hover:text-white"
+      >
+        <option *ngFor="let y of yearOptions" [ngValue]="y" class="bg-zinc-950 text-zinc-200">{{ y }}</option>
+      </select>
+    </div>
+
+    <button type="button" (click)="openRecorrentes.emit()" [disabled]="disabled" class="fc-button fc-button-secondary">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+      </svg>
+      Recorrentes
+    </button>
+
+    <button type="button" (click)="exportCsv.emit()" [disabled]="disabled" class="fc-button fc-button-secondary">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+      </svg>
+      CSV
+    </button>
+
+    <label class="fc-button fc-button-secondary cursor-pointer">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+      </svg>
+      CSV
+      <input type="file" accept=".csv" class="hidden" (change)="onImport($event)" />
+    </label>
+
+    <button type="button" (click)="logout.emit()" [disabled]="disabled" class="fc-button fc-button-ghost">
+      Sair
+    </button>
+  </div>
+</header>

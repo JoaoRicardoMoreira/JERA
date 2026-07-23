@@ -1,0 +1,95 @@
+<div class="space-y-8">
+  <div *ngIf="loading" class="fc-surface-muted px-4 py-3 text-sm text-emerald-200">
+    Carregando investimentos...
+  </div>
+
+  <div *ngIf="error" class="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+    {{ error }}
+  </div>
+
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <section class="fc-surface p-5">
+      <p class="mb-1 text-xs uppercase tracking-wider text-zinc-500">Total aportado</p>
+      <p class="text-2xl font-bold text-violet-400">{{ currency(overview?.totalAportado ?? 0) }}</p>
+    </section>
+
+    <section class="fc-surface p-5">
+      <p class="mb-1 text-xs uppercase tracking-wider text-zinc-500">Patrimonio estimado</p>
+      <p class="text-2xl font-bold text-emerald-400">{{ currency(overview?.patrimonioFinal ?? 0) }}</p>
+    </section>
+
+    <section class="fc-surface p-5">
+      <p class="mb-1 text-xs uppercase tracking-wider text-zinc-500">Aporte em {{ monthLabel }}</p>
+      <p class="text-2xl font-bold text-zinc-100">
+        {{ overview?.currentContribution ? currency(overview?.currentContribution?.amount ?? 0) : '-' }}
+      </p>
+    </section>
+  </div>
+
+  <section class="fc-surface p-6">
+    <h4 class="mb-4 text-sm font-medium uppercase tracking-wider text-zinc-400">Taxa de rendimento</h4>
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end">
+      <label class="block flex-1">
+        <span class="mb-1.5 block text-sm font-medium text-zinc-400">Taxa mensal (%)</span>
+        <input type="number" step="0.01" min="0" [(ngModel)]="taxaInput" class="fc-field w-full px-4" />
+        <span class="mt-2 block text-xs text-zinc-500">
+          Equivalente aproximado ao ano: {{ overview?.annualEquivalentPercent ?? 0 | number:'1.2-2' }}% a.a.
+        </span>
+      </label>
+      <button type="button" (click)="saveTaxa()" [disabled]="saving" class="fc-button fc-button-investment shrink-0">
+        Salvar taxa
+      </button>
+    </div>
+  </section>
+
+  <section class="fc-surface p-6">
+    <ng-container *ngIf="overview?.timeline?.length; else emptyTimeline">
+      <h4 class="mb-6 text-center text-sm font-medium uppercase tracking-wider text-zinc-400">Evolucao do patrimonio</h4>
+      <div class="h-80">
+        <canvas #investmentChartCanvas></canvas>
+      </div>
+    </ng-container>
+    <ng-template #emptyTimeline>
+      <p class="py-10 text-center text-sm text-zinc-500">Cadastre um aporte abaixo para ver a evolucao do patrimonio.</p>
+    </ng-template>
+  </section>
+
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <section class="fc-surface p-6">
+      <h4 class="mb-4 text-sm font-medium uppercase tracking-wider text-zinc-400">Aporte manual - {{ monthLabel }}</h4>
+      <form class="flex flex-col gap-3 sm:flex-row" (ngSubmit)="saveContribution()">
+        <input type="number" step="0.01" min="0" [(ngModel)]="aporteValor" name="aporteValor" placeholder="Valor em R$" required class="fc-field flex-1 px-4" />
+        <button type="submit" [disabled]="saving" class="fc-button fc-button-investment">
+          Salvar
+        </button>
+      </form>
+    </section>
+
+    <section class="fc-surface overflow-hidden p-6">
+      <h4 class="mb-4 text-sm font-medium uppercase tracking-wider text-zinc-400">Historico de aportes</h4>
+      <p *ngIf="sortedContributions.length === 0" class="text-sm text-zinc-500">Nenhum aporte registrado.</p>
+      <div *ngIf="sortedContributions.length > 0" class="max-h-48 overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-sm">
+          <thead class="text-xs uppercase text-zinc-500">
+            <tr>
+              <th class="pb-2 font-semibold">Mes</th>
+              <th class="pb-2 text-right font-semibold">Valor</th>
+              <th class="pb-2 text-center font-semibold">Acoes</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5">
+            <tr *ngFor="let item of sortedContributions" class="fc-table-row">
+              <td class="py-2 text-zinc-300">{{ item.month | number:'2.0-0' }}/{{ item.year }}</td>
+              <td class="py-2 text-right font-medium text-violet-400">{{ currency(item.amount) }}</td>
+              <td class="py-2 text-center">
+                <button type="button" (click)="deleteContribution(item.id)" class="fc-button fc-button-ghost !min-h-8 !p-2 text-zinc-500 hover:text-rose-400" title="Excluir aporte">
+                  Excluir
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>
