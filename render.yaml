@@ -2,6 +2,7 @@ services:
   - type: web
     name: jera-api
     runtime: node
+    region: virginia
     plan: free
     autoDeployTrigger: commit
     buildCommand: npm ci --include=dev && npm run prisma:generate && npm run build
