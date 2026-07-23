@@ -36,16 +36,16 @@ model User {
   email        String    @unique @db.VarChar(255)
   passwordHash String    @map("password_hash") @db.VarChar(255)
   roles        Role[]    @default([USER])
-  permissions  String[]  @default([]) @db.VarChar(120)
+  permissions  String[]  @default(["transactions:read", "transactions:create", "transactions:update", "transactions:delete", "goals:manage", "recurrences:manage", "dashboard:read", "investments:read", "investments:manage"]) @db.VarChar(120)
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
   deletedAt    DateTime? @map("deleted_at")
 
-  refreshTokens RefreshToken[]
-  categories    Category[]
-  transactions  Transaction[]
-  goals         Goal[]
-  recurrences   Recurrence[]
+  refreshTokens           RefreshToken[]
+  categories              Category[]
+  transactions            Transaction[]
+  goals                   Goal[]
+  recurrences             Recurrence[]
   investmentConfig        InvestmentConfig?
   investmentContributions InvestmentContribution[]
 
@@ -67,15 +67,15 @@ model InvestmentConfig {
 }
 
 model InvestmentContribution {
-  id        String    @id @default(uuid()) @db.Uuid
-  userId    String    @map("user_id") @db.Uuid
-  amount    Decimal   @db.Decimal(14, 2)
-  contributedAt DateTime @map("contributed_at")
-  month     Int
-  year      Int
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  id            String    @id @default(uuid()) @db.Uuid
+  userId        String    @map("user_id") @db.Uuid
+  amount        Decimal   @db.Decimal(14, 2)
+  contributedAt DateTime  @map("contributed_at")
+  month         Int
+  year          Int
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

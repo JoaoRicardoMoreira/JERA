@@ -7,6 +7,7 @@ import * as bcrypt from 'bcryptjs';
 
 import { UserEntity } from '../users/entities/user.entity';
 import { AuthResponseDto } from './dto/auth-response.dto';
+import { DEFAULT_USER_PERMISSIONS } from './entities/permission.enum';
 import { Role } from './entities/role.enum';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -36,7 +37,7 @@ export class AuthService {
       email,
       passwordHash,
       roles: [Role.USER],
-      permissions: [],
+      permissions: [...DEFAULT_USER_PERMISSIONS],
     });
 
     return this.createAuthResponse(user);

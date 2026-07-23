@@ -11,3 +11,5 @@ export const Permission = {
 } as const;
 
 export type Permission = (typeof Permission)[keyof typeof Permission];
+
+export const DEFAULT_USER_PERMISSIONS: Permission[] = Object.values(Permission);

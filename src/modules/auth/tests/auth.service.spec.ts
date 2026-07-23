@@ -6,6 +6,7 @@ import * as bcrypt from 'bcryptjs';
 
 import { UserEntity } from '../../users/entities/user.entity';
 import { AuthSessionEntity } from '../entities/auth-session.entity';
+import { DEFAULT_USER_PERMISSIONS } from '../entities/permission.enum';
 import { AuthRepository } from '../interfaces/auth-repository.interface';
 import { AuthValidator } from '../validators/auth.validator';
 import { AuthService } from '../auth.service';
@@ -93,7 +94,7 @@ describe('AuthService', () => {
         name: 'Finance User',
         email: 'user@example.com',
         roles: [Role.USER],
-        permissions: [],
+        permissions: DEFAULT_USER_PERMISSIONS,
       }),
     );
     expect(repository.createUser.mock.calls[0][0].passwordHash).not.toBe('StrongPass123');
