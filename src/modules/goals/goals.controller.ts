@@ -23,7 +23,7 @@ import { GoalValidator } from './validators/goal.validator';
 
 @ApiTags('Goals')
 @ApiBearerAuth()
-@Controller('goals')
+@Controller('budgets')
 export class GoalsController {
   constructor(
     private readonly goalsService: GoalsService,

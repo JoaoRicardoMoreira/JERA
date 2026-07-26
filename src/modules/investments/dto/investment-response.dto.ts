@@ -40,6 +40,18 @@ export class InvestmentContributionResponseDto {
   @Expose()
   year: number;
 
+  @ApiProperty({ example: '14.1500', nullable: true })
+  @Expose()
+  selicAnnualRatePercent: string | null;
+
+  @ApiProperty({ example: '2026-07-24T00:00:00.000Z', nullable: true })
+  @Expose()
+  selicReferenceDate: string | null;
+
+  @ApiProperty({ example: '1.1074', nullable: true })
+  @Expose()
+  monthlyEquivalentRatePercent: string | null;
+
   @ApiProperty({ example: '2026-07-04T12:00:00.000Z' })
   @Expose()
   createdAt: string;

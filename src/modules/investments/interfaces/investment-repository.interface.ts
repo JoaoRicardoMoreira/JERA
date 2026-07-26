@@ -14,6 +14,15 @@ export interface UpsertInvestmentContributionData {
   contributedAt: Date;
   month: number;
   year: number;
+  selicAnnualRatePercent: string;
+  selicReferenceDate: Date;
+}
+
+export interface SetContributionSelicRateData {
+  userId: string;
+  contributionId: string;
+  selicAnnualRatePercent: string;
+  selicReferenceDate: Date;
 }
 
 export interface InvestmentRepository {
@@ -21,5 +30,8 @@ export interface InvestmentRepository {
   upsertConfig(data: UpsertInvestmentConfigData): Promise<InvestmentConfigEntity>;
   findContributionsByUserId(userId: string): Promise<InvestmentContributionEntity[]>;
   upsertContribution(data: UpsertInvestmentContributionData): Promise<InvestmentContributionEntity>;
+  setContributionSelicRate(
+    data: SetContributionSelicRateData,
+  ): Promise<InvestmentContributionEntity>;
   softDeleteContribution(userId: string, contributionId: string): Promise<boolean>;
 }

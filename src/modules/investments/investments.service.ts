@@ -6,7 +6,6 @@ import {
   InvestmentContributionResponseDto,
   InvestmentOverviewResponseDto,
 } from './dto/investment-response.dto';
-import { UpsertInvestmentConfigDto } from './dto/upsert-investment-config.dto';
 import { UpsertInvestmentContributionDto } from './dto/upsert-investment-contribution.dto';
 import { InvestmentContributionEntity } from './entities/investment-contribution.entity';
 import {
@@ -14,6 +13,7 @@ import {
   InvestmentRepository,
 } from './interfaces/investment-repository.interface';
 import { InvestmentService } from './interfaces/investment-service.interface';
+import { SELIC_RATE_PROVIDER, SelicRateProvider } from './interfaces/selic-rate-provider.interface';
 import { InvestmentMapper, InvestmentTimelinePoint } from './mapper/investment.mapper';
 import { InvestmentValidator } from './validators/investment.validator';
 
@@ -38,33 +38,32 @@ export class InvestmentsService implements InvestmentService {
     @Inject(INVESTMENTS_REPOSITORY)
     private readonly investmentsRepository: InvestmentRepository,
     private readonly investmentValidator: InvestmentValidator,
+    @Inject(SELIC_RATE_PROVIDER)
+    private readonly selicRateProvider: SelicRateProvider,
   ) {}
 
   async getOverview(
     userId: string,
     query: InvestmentQueryDto,
   ): Promise<InvestmentOverviewResponseDto> {
-    const [config, contributions] = await Promise.all([
+    let [config, contributions] = await Promise.all([
       this.investmentsRepository.getOrCreateConfig(userId),
       this.investmentsRepository.findContributionsByUserId(userId),
     ]);
+    contributions = await this.ensureContributionRates(userId, contributions);
+    const latestContribution = this.latestContribution(contributions);
+    const projectedMonthlyRate = latestContribution?.selicAnnualRatePercent
+      ? InvestmentMapper.monthlyEquivalentPercent(latestContribution.selicAnnualRatePercent)
+      : '0.0000';
+
+    if (config.taxaMensalPercent !== projectedMonthlyRate) {
+      config = await this.investmentsRepository.upsertConfig({
+        userId,
+        taxaMensalPercent: projectedMonthlyRate,
+      });
+    }
 
     return this.buildOverview(config, contributions, query);
-  }
-
-  async updateConfig(
-    userId: string,
-    dto: UpsertInvestmentConfigDto,
-  ): Promise<InvestmentOverviewResponseDto> {
-    await this.investmentsRepository.upsertConfig({
-      userId,
-      taxaMensalPercent: dto.taxaMensalPercent,
-    });
-
-    return this.getOverview(userId, {
-      month: new Date().getUTCMonth() + 1,
-      year: new Date().getUTCFullYear(),
-    });
   }
 
   async upsertContribution(
@@ -72,12 +71,20 @@ export class InvestmentsService implements InvestmentService {
     dto: UpsertInvestmentContributionDto,
   ): Promise<InvestmentContributionResponseDto> {
     const contributedAt = new Date(dto.contributedAt);
+    this.investmentValidator.ensureContributionDateIsNotFuture(contributedAt);
+    const selicRate = await this.selicRateProvider.getAnnualRateForDate(contributedAt);
     const contribution = await this.investmentsRepository.upsertContribution({
       userId,
       amount: dto.amount,
       contributedAt,
       month: contributedAt.getUTCMonth() + 1,
       year: contributedAt.getUTCFullYear(),
+      selicAnnualRatePercent: selicRate.annualRatePercent,
+      selicReferenceDate: selicRate.referenceDate,
+    });
+    await this.investmentsRepository.upsertConfig({
+      userId,
+      taxaMensalPercent: InvestmentMapper.monthlyEquivalentPercent(selicRate.annualRatePercent),
     });
 
     return InvestmentMapper.toContributionResponse(contribution);
@@ -97,7 +104,7 @@ export class InvestmentsService implements InvestmentService {
     contributions: InvestmentContributionEntity[],
     endAt: InvestmentQueryDto,
   ): InvestmentOverviewResponseDto {
-    const timeline = this.buildTimeline(contributions, config.taxaMensalPercent, endAt);
+    const timeline = this.buildTimeline(contributions, endAt);
     const currentContribution = contributions.find(
       (contribution) => contribution.month === endAt.month && contribution.year === endAt.year,
     );
@@ -118,13 +125,14 @@ export class InvestmentsService implements InvestmentService {
         timeline.length > 0
           ? timeline[timeline.length - 1].patrimonio
           : new Prisma.Decimal(0).toFixed(2),
-      annualEquivalentPercent: this.annualEquivalentPercent(config.taxaMensalPercent),
+      annualEquivalentPercent: Number(
+        this.latestContribution(contributions)?.selicAnnualRatePercent ?? 0,
+      ),
     };
   }
 
   private buildTimeline(
     contributions: InvestmentContributionEntity[],
-    taxaMensalPercent: string,
     endAt: InvestmentQueryDto,
   ): InvestmentTimelinePoint[] {
     const withValue = contributions.filter((contribution) =>
@@ -146,8 +154,6 @@ export class InvestmentsService implements InvestmentService {
       ) > 0
         ? endAt
         : { year: lastFromData.year, month: lastFromData.month };
-    const rate = new Prisma.Decimal(taxaMensalPercent).dividedBy(100);
-
     return this.listMonthRange(
       { year: first.year, month: first.month },
       { year: last.year, month: last.month },
@@ -163,8 +169,11 @@ export class InvestmentsService implements InvestmentService {
       const patrimonio = contributionsToDate
         .reduce((sum, contribution) => {
           const months = this.fullMonthsBetween(contribution.contributedAt, valuationDate);
+          const monthlyRate = new Prisma.Decimal(
+            InvestmentMapper.monthlyEquivalentPercent(contribution.selicAnnualRatePercent ?? '0'),
+          ).dividedBy(100);
           const accumulated = new Prisma.Decimal(contribution.amount).times(
-            rate.plus(1).pow(months),
+            monthlyRate.plus(1).pow(months),
           );
           return sum.plus(accumulated);
         }, new Prisma.Decimal(0))
@@ -191,14 +200,38 @@ export class InvestmentsService implements InvestmentService {
     return Math.max(0, monthDifference - incompleteMonth);
   }
 
-  private annualEquivalentPercent(taxaMensalPercent: string): number {
-    const rate = Number(taxaMensalPercent) / 100;
+  private async ensureContributionRates(
+    userId: string,
+    contributions: InvestmentContributionEntity[],
+  ): Promise<InvestmentContributionEntity[]> {
+    return Promise.all(
+      contributions.map(async (contribution) => {
+        if (contribution.selicAnnualRatePercent && contribution.selicReferenceDate) {
+          return contribution;
+        }
 
-    if (rate <= 0) {
-      return 0;
-    }
+        const selicRate = await this.selicRateProvider.getAnnualRateForDate(
+          contribution.contributedAt,
+        );
 
-    return Number(((Math.pow(1 + rate, 12) - 1) * 100).toFixed(2));
+        return this.investmentsRepository.setContributionSelicRate({
+          userId,
+          contributionId: contribution.id,
+          selicAnnualRatePercent: selicRate.annualRatePercent,
+          selicReferenceDate: selicRate.referenceDate,
+        });
+      }),
+    );
+  }
+
+  private latestContribution(
+    contributions: InvestmentContributionEntity[],
+  ): InvestmentContributionEntity | null {
+    return (
+      contributions
+        .slice()
+        .sort((a, b) => b.contributedAt.getTime() - a.contributedAt.getTime())[0] ?? null
+    );
   }
 
   private monthKey(year: number, month: number): string {

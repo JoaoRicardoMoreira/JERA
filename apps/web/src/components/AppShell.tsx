@@ -1,17 +1,23 @@
 'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FinanceProvider } from './FinanceProvider';
+import { Icon } from './Icon';
 import { session } from '@/lib/api';
+
 const links = [
-  ['/dashboard', '▦', 'Visao geral'],
-  ['/rendas', '↑', 'Rendas'],
-  ['/gastos', '↓', 'Gastos'],
-  ['/recorrentes', '↻', 'Recorrentes'],
-  ['/investimentos', '▥', 'Investimentos'],
+  ['/dashboard', 'nordicDashboard', 'Dashboard', 'ᚨ'],
+  ['/rendas', 'nordicIncome', 'Receitas', 'ᚠ'],
+  ['/gastos', 'nordicExpense', 'Despesas', 'ᚾ'],
+  ['/investimentos', 'nordicInvestment', 'Investimentos', 'ᛒ'],
+  ['/metas', 'nordicGoals', 'Metas', 'ᛏ'],
+  ['/orcamentos', 'nordicBudget', 'Orçamentos', 'ᛟ'],
+  ['/recorrentes', 'nordicRepeat', 'Recorrências', 'ᛃ'],
 ] as const;
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const router = useRouter();
@@ -23,48 +29,76 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       router.replace('/login');
       return;
     }
-
     setSessionReady(true);
   }, [router]);
 
-  if (!sessionReady) return null;
+  if (!sessionReady) return <div className="app-boot" aria-label="Carregando" />;
 
   return (
     <FinanceProvider>
       <div className="shell">
-        <button className="mobile-menu button secondary" onClick={() => setOpen(!open)}>
-          ☰
+        <button
+          className={`mobile-menu icon-button ${open ? 'open' : ''}`}
+          aria-label={open ? 'Fechar menu' : 'Abrir menu'}
+          onClick={() => setOpen(!open)}
+        >
+          <Icon name="menu" />
         </button>
+        {open && (
+          <button
+            className="sidebar-backdrop"
+            aria-label="Fechar menu"
+            onClick={() => setOpen(false)}
+          />
+        )}
         <aside className={open ? 'sidebar open' : 'sidebar'}>
-          <div className="brand">
-            <Image src="/brand/jera-mark-reference.png" alt="Jera" width={34} height={34} />
-            <b>Jera</b>
+          <div className="sidebar-rune-rail" aria-hidden="true">
+            <span>ᚠ</span>
+            <span>ᛃ</span>
+            <span>ᛉ</span>
+            <span>ᛟ</span>
           </div>
-          <nav>
-            {links.map(([href, icon, label]) => (
+          <div className="brand">
+            <span className="brand-mark">
+              <Image src="/brand/jera-mark-reference.png" alt="" width={36} height={36} priority />
+            </span>
+            <div>
+              <b>Jera</b>
+              <small>Jornada financeira</small>
+            </div>
+          </div>
+          <div className="sidebar-section-title" aria-hidden="true">
+            <span>ᛃ</span>
+            <small>Rotas da jornada</small>
+          </div>
+          <nav aria-label="Navegação principal">
+            {links.map(([href, icon, label, rune]) => (
               <Link
                 key={href}
                 href={href}
                 onClick={() => setOpen(false)}
                 className={path === href ? 'active' : ''}
               >
-                <i>{icon}</i>
-                {label}
+                <span className="sidebar-nav-icon">
+                  <Icon name={icon} size={19} />
+                </span>
+                <span>{label}</span>
+                <i aria-hidden="true">{rune}</i>
               </Link>
             ))}
           </nav>
           <div className="sidebar-foot">
-            <Link href="/configuracoes" className={path === '/configuracoes' ? 'active' : ''}>
-              ● Configuracoes
-            </Link>
-            <button
-              onClick={() => {
-                session.clear();
-                router.push('/login');
-              }}
-            >
-              Sair
-            </button>
+            <div className="journey-mark">
+              <span className="journey-rune">ᛃ</span>
+              <div>
+                <small>Runa Jera</small>
+                <p>
+                  Cada ciclo cultivado
+                  <br />
+                  prepara a próxima colheita.
+                </p>
+              </div>
+            </div>
           </div>
         </aside>
         <main>{children}</main>

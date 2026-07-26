@@ -32,7 +32,6 @@ import {
   InvestmentContributionResponseDto,
   InvestmentOverviewResponseDto,
 } from './dto/investment-response.dto';
-import { UpsertInvestmentConfigDto } from './dto/upsert-investment-config.dto';
 import { UpsertInvestmentContributionDto } from './dto/upsert-investment-contribution.dto';
 import { InvestmentsService } from './investments.service';
 import { InvestmentValidator } from './validators/investment.validator';
@@ -68,32 +67,11 @@ export class InvestmentsController {
     return this.investmentsService.getOverview(userId, query);
   }
 
-  @Put('config')
-  @Permissions(Permission.INVESTMENTS_MANAGE)
-  @ApiOperation({
-    summary: 'Atualiza a taxa mensal de rendimento.',
-    description: 'Persistencia da configuracao usada no painel de investimentos.',
-  })
-  @ApiOkResponse({ type: InvestmentOverviewResponseDto })
-  @ApiBadRequestResponse({ description: 'Payload invalido ou fora das regras de validacao.' })
-  @ApiUnauthorizedResponse({ description: 'JWT ausente, invalido ou usuario sem contexto.' })
-  @ApiForbiddenResponse({
-    description: 'Usuario autenticado sem permissao para gerenciar investimentos.',
-  })
-  async updateConfig(
-    @CurrentUser() user: RequestUser | undefined,
-    @Body() dto: UpsertInvestmentConfigDto,
-  ): Promise<InvestmentOverviewResponseDto> {
-    const userId = this.investmentValidator.ensureAuthenticatedUserId(user?.id);
-
-    return this.investmentsService.updateConfig(userId, dto);
-  }
-
   @Put('contributions')
   @Permissions(Permission.INVESTMENTS_MANAGE)
   @ApiOperation({
-    summary: 'Cria ou atualiza o aporte de um mes.',
-    description: 'Mantem um unico aporte por usuario, mes e ano.',
+    summary: 'Cria um aporte com a Selic vigente na data.',
+    description: 'Consulta a serie 1178 do Banco Central e persiste a taxa anual junto ao aporte.',
   })
   @ApiOkResponse({ type: InvestmentContributionResponseDto })
   @ApiBadRequestResponse({ description: 'Payload invalido ou fora das regras de validacao.' })

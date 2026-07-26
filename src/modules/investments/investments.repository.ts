@@ -6,6 +6,7 @@ import { InvestmentConfigEntity } from './entities/investment-config.entity';
 import { InvestmentContributionEntity } from './entities/investment-contribution.entity';
 import {
   InvestmentRepository,
+  SetContributionSelicRateData,
   UpsertInvestmentConfigData,
   UpsertInvestmentContributionData,
 } from './interfaces/investment-repository.interface';
@@ -76,6 +77,25 @@ export class InvestmentsRepository implements InvestmentRepository {
         contributedAt: data.contributedAt,
         month: data.month,
         year: data.year,
+        selicAnnualRatePercent: new Prisma.Decimal(data.selicAnnualRatePercent),
+        selicReferenceDate: data.selicReferenceDate,
+      },
+    });
+
+    return InvestmentMapper.toContributionEntity(contribution);
+  }
+
+  async setContributionSelicRate(
+    data: SetContributionSelicRateData,
+  ): Promise<InvestmentContributionEntity> {
+    const contribution = await this.prisma.investmentContribution.update({
+      where: {
+        id: data.contributionId,
+        userId: data.userId,
+      },
+      data: {
+        selicAnnualRatePercent: new Prisma.Decimal(data.selicAnnualRatePercent),
+        selicReferenceDate: data.selicReferenceDate,
       },
     });
 

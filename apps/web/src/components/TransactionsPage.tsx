@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import { useState } from 'react';
 import { date, money } from '@/lib/api';
 import { useFinance } from './FinanceProvider';
@@ -6,7 +7,7 @@ import { PageChrome } from './PageChrome';
 import { TransactionModal } from './TransactionModal';
 import type { Transaction, TransactionType } from '@/lib/types';
 export function TransactionsPage({ type }: { type: TransactionType }) {
-  const { data, remove } = useFinance();
+  const { data, remove, valuesVisible } = useFinance();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Transaction | null>(null);
   const items = data.transactions.filter((t) => t.type === type);
@@ -19,10 +20,16 @@ export function TransactionsPage({ type }: { type: TransactionType }) {
       return acc;
     }, {}),
   );
+  const showMoney = (value: string | number) => (valuesVisible ? money(value) : 'R$ ••••••');
   return (
     <>
       <PageChrome
-        title={type === 'INCOME' ? 'Rendas' : 'Gastos'}
+        title={type === 'INCOME' ? 'Receitas' : 'Despesas'}
+        subtitle={
+          type === 'INCOME'
+            ? 'Recursos que impulsionam sua jornada.'
+            : 'Clareza para decidir onde seus recursos devem ir.'
+        }
         action={
           <button
             className={type === 'INCOME' ? 'button primary' : 'button secondary'}
@@ -31,27 +38,96 @@ export function TransactionsPage({ type }: { type: TransactionType }) {
               setOpen(true);
             }}
           >
-            + {type === 'INCOME' ? 'Nova Renda' : 'Novo Gasto'}
+            + {type === 'INCOME' ? 'Nova Receita' : 'Nova Despesa'}
           </button>
         }
       />
-      <section className="content">
-        <div className="total">
-          <small>Total no periodo</small>
-          <h1 className={type === 'INCOME' ? 'income' : ''}>
-            {type === 'INCOME' ? '+' : '-'} {money(total)}
-          </h1>
-        </div>
+      <section
+        className={`content transactions-page ${
+          type === 'INCOME' ? 'income-page' : 'expense-page'
+        }`}
+      >
+        {type === 'INCOME' ? (
+          <section className="income-hero">
+            <div className="income-hero-art" aria-hidden="true">
+              <Image
+                src="/brand/jera-card-income.jpg"
+                fill
+                priority
+                sizes="(max-width: 800px) 100vw, 80vw"
+                alt=""
+              />
+            </div>
+            <div className="income-hero-copy">
+              <span className="eyebrow">Recursos recebidos</span>
+              <h1>+ {showMoney(total)}</h1>
+              <p>
+                <strong>{items.length}</strong> entradas registradas
+                <span aria-hidden="true">·</span>
+                <strong>{breakdown.length}</strong>{' '}
+                {breakdown.length === 1 ? 'categoria' : 'categorias'}
+              </p>
+              <button
+                className="button glass"
+                onClick={() => {
+                  setEditing(null);
+                  setOpen(true);
+                }}
+              >
+                Registrar receita <span>→</span>
+              </button>
+            </div>
+          </section>
+        ) : (
+          <section className="expense-hero">
+            <div className="expense-hero-art" aria-hidden="true">
+              <Image
+                src="/brand/jera-card-expenses.jpg"
+                fill
+                priority
+                sizes="(max-width: 800px) 100vw, 80vw"
+                alt=""
+              />
+            </div>
+            <div className="expense-hero-copy">
+              <span className="eyebrow">Recursos utilizados</span>
+              <h1>- {showMoney(total)}</h1>
+              <p>
+                <strong>{items.length}</strong> saídas registradas
+                <span aria-hidden="true">·</span>
+                <strong>{breakdown.length}</strong>{' '}
+                {breakdown.length === 1 ? 'categoria' : 'categorias'}
+              </p>
+              <button
+                className="button expense-glass"
+                onClick={() => {
+                  setEditing(null);
+                  setOpen(true);
+                }}
+              >
+                Registrar despesa <span>→</span>
+              </button>
+            </div>
+          </section>
+        )}
         {type === 'EXPENSE' && (
-          <section>
-            <small>Por categoria</small>
+          <section className="expense-breakdown-section">
+            <div className="transactions-list-heading expense-heading">
+              <div>
+                <span className="eyebrow">Distribuição</span>
+                <h2>Despesas por categoria</h2>
+              </div>
+              <span>
+                {breakdown.length} {breakdown.length === 1 ? 'categoria' : 'categorias'}
+              </span>
+            </div>
             <div className="breakdown">
               {breakdown.map((b) => (
-                <div className="progress-card" key={b.name}>
+                <div className="progress-card expense-progress-card" key={b.name}>
                   <span>
                     <b>{b.name}</b>
                     <em>
-                      {money(b.value)} ·{' '}
+                      {showMoney(b.value)} ·{' '}
                       {Number(total) ? Math.round((b.value / Number(total)) * 100) : 0}%
                     </em>
                   </span>
@@ -65,12 +141,21 @@ export function TransactionsPage({ type }: { type: TransactionType }) {
             </div>
           </section>
         )}
-        <div className="table-shell">
+        <div className="transactions-list-heading">
+          <div>
+            <span className="eyebrow">Histórico</span>
+            <h2>{type === 'INCOME' ? 'Entradas do período' : 'Saídas do período'}</h2>
+          </div>
+          <span>
+            {items.length} {items.length === 1 ? 'lançamento' : 'lançamentos'}
+          </span>
+        </div>
+        <div className={`table-shell ${type === 'INCOME' ? 'income-table' : 'expense-table'}`}>
           <table>
             <thead>
               <tr>
                 <th>Data</th>
-                <th>Descricao</th>
+                <th>Descrição</th>
                 <th>Categoria</th>
                 <th className="right">Valor</th>
                 <th />
@@ -81,13 +166,13 @@ export function TransactionsPage({ type }: { type: TransactionType }) {
                 <tr key={t.id}>
                   <td>{date(t.occurredAt)}</td>
                   <td>
-                    <b>{t.description || 'Sem descricao'}</b>
+                    <b>{t.description || 'Sem descrição'}</b>
                   </td>
                   <td>
                     <span className="pill">{t.categoryName || 'Sem categoria'}</span>
                   </td>
                   <td className={`right ${type === 'INCOME' ? 'income' : ''}`}>
-                    {type === 'INCOME' ? '+' : '-'} {money(t.amount)}
+                    {type === 'INCOME' ? '+' : '-'} {showMoney(t.amount)}
                   </td>
                   <td>
                     <div className="table-actions">
@@ -103,7 +188,7 @@ export function TransactionsPage({ type }: { type: TransactionType }) {
                       <button
                         className="text-button delete"
                         onClick={() =>
-                          confirm('Excluir este lancamento?') && remove(`/transactions/${t.id}`)
+                          confirm('Excluir este lançamento?') && remove(`/transactions/${t.id}`)
                         }
                       >
                         Excluir
@@ -115,7 +200,7 @@ export function TransactionsPage({ type }: { type: TransactionType }) {
               {!items.length && (
                 <tr>
                   <td colSpan={5} className="empty">
-                    Nenhum {type === 'INCOME' ? 'renda' : 'gasto'} neste periodo
+                    Nenhuma {type === 'INCOME' ? 'receita' : 'despesa'} neste período
                   </td>
                 </tr>
               )}

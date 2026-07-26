@@ -4,6 +4,8 @@ export const Permission = {
   TRANSACTIONS_UPDATE: 'transactions:update',
   TRANSACTIONS_DELETE: 'transactions:delete',
   GOALS_MANAGE: 'goals:manage',
+  FINANCIAL_GOALS_MANAGE: 'financial-goals:manage',
+  PAYABLES_MANAGE: 'payables:manage',
   RECURRENCES_MANAGE: 'recurrences:manage',
   DASHBOARD_READ: 'dashboard:read',
   INVESTMENTS_READ: 'investments:read',

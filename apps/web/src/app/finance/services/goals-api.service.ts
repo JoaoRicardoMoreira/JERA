@@ -14,7 +14,7 @@ export class GoalsApiService {
 
   listGoals(query: DashboardQuery): Observable<GoalResponse[]> {
     return this.http
-      .get<ApiResponse<GoalResponse[]>>(`${this.apiBaseUrl}/goals`, {
+      .get<ApiResponse<GoalResponse[]>>(`${this.apiBaseUrl}/budgets`, {
         params: new HttpParams().set('month', query.month).set('year', query.year),
       })
       .pipe(map((response) => response.data));
@@ -22,7 +22,7 @@ export class GoalsApiService {
 
   upsertGoal(request: UpsertGoalRequest): Observable<GoalResponse> {
     return this.http
-      .put<ApiResponse<GoalResponse>>(`${this.apiBaseUrl}/goals`, request)
+      .put<ApiResponse<GoalResponse>>(`${this.apiBaseUrl}/budgets`, request)
       .pipe(map((response) => response.data));
   }
 }

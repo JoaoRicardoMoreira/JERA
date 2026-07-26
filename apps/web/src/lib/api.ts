@@ -3,7 +3,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3000/a
 type Session = {
   accessToken: string;
   refreshToken: string;
-  user?: { name: string; email: string };
+  user?: { name: string; email: string; gender?: import('./types').Gender | null };
 };
 export const session = {
   get(): Session | null {

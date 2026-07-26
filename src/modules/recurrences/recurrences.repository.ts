@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, RecurrenceStatus as PrismaRecurrenceStatus } from '@prisma/client';
+import {
+  PayableOrigin,
+  Prisma,
+  RecurrenceStatus as PrismaRecurrenceStatus,
+  TransactionType as PrismaTransactionType,
+} from '@prisma/client';
 
 import { PrismaService } from '../../database/prisma.service';
 import { buildTransactionCreateData } from '../transactions/transactions.repository';
@@ -129,6 +134,7 @@ export class RecurrencesRepository implements RecurrenceRepository {
   ): Promise<ProcessDueRecurrencesResult> {
     const createdTransactionIds: string[] = [];
     let skippedCount = 0;
+    let processedCount = 0;
 
     await this.prisma.$transaction(async (transaction) => {
       for (const recurrence of data.recurrences) {
@@ -154,26 +160,51 @@ export class RecurrencesRepository implements RecurrenceRepository {
           continue;
         }
 
-        const created = await transaction.transaction.create({
-          data: buildTransactionCreateData({
-            userId: data.userId,
-            categoryId: recurrence.categoryId ?? undefined,
-            amount: recurrence.amount,
-            type: recurrence.type,
-            description: recurrence.description ?? undefined,
-            occurredAt: recurrence.occurredAt,
-          }),
-          select: {
-            id: true,
-          },
-        });
-
-        createdTransactionIds.push(created.id);
+        if (recurrence.type === PrismaTransactionType.EXPENSE) {
+          await transaction.payable.upsert({
+            where: {
+              userId_recurrenceId_competenceMonth_competenceYear: {
+                userId: data.userId,
+                recurrenceId: recurrence.id,
+                competenceMonth: recurrence.occurredAt.getUTCMonth() + 1,
+                competenceYear: recurrence.occurredAt.getUTCFullYear(),
+              },
+            },
+            update: {},
+            create: {
+              userId: data.userId,
+              recurrenceId: recurrence.id,
+              categoryId: recurrence.categoryId,
+              description: recurrence.description ?? 'Despesa recorrente',
+              amount: new Prisma.Decimal(recurrence.amount),
+              competenceMonth: recurrence.occurredAt.getUTCMonth() + 1,
+              competenceYear: recurrence.occurredAt.getUTCFullYear(),
+              dueDate: recurrence.occurredAt,
+              origin: PayableOrigin.RECURRENCE,
+            },
+          });
+        } else {
+          const created = await transaction.transaction.create({
+            data: buildTransactionCreateData({
+              userId: data.userId,
+              categoryId: recurrence.categoryId ?? undefined,
+              amount: recurrence.amount,
+              type: recurrence.type,
+              description: recurrence.description ?? undefined,
+              occurredAt: recurrence.occurredAt,
+            }),
+            select: {
+              id: true,
+            },
+          });
+          createdTransactionIds.push(created.id);
+        }
+        processedCount += 1;
       }
     });
 
     return {
-      processedCount: createdTransactionIds.length,
+      processedCount,
       skippedCount,
       createdTransactionIds,
     };

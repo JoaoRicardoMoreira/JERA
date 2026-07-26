@@ -6,6 +6,8 @@ export class InvestmentContributionEntity {
     public readonly contributedAt: Date,
     public readonly month: number,
     public readonly year: number,
+    public readonly selicAnnualRatePercent: string | null,
+    public readonly selicReferenceDate: Date | null,
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
     public readonly deletedAt: Date | null,

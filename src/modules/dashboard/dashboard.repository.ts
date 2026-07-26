@@ -69,29 +69,46 @@ export class DashboardRepositoryImpl implements DashboardRepository {
     period: DashboardPeriod,
   ): Promise<DashboardRecurrenceTotalsEntity> {
     const { periodStart, periodEnd } = this.getPeriodRange(period);
-    const recurrences = await this.prisma.recurrence.findMany({
-      where: {
-        userId: period.userId,
-        status: RecurrenceStatus.ACTIVE,
-        deletedAt: null,
-        startDate: { lt: periodEnd },
-        OR: [{ endDate: null }, { endDate: { gte: periodStart } }],
-        AND: [
-          {
-            OR: [
-              { lastProcessedAt: null },
-              { lastProcessedAt: { lt: periodStart } },
-              { lastProcessedAt: { gte: periodEnd } },
-            ],
-          },
-        ],
-      },
-      select: { amount: true, type: true, frequency: true, startDate: true },
-    });
+    const [recurrences, paidPayables] = await Promise.all([
+      this.prisma.recurrence.findMany({
+        where: {
+          userId: period.userId,
+          status: RecurrenceStatus.ACTIVE,
+          deletedAt: null,
+          startDate: { lt: periodEnd },
+          OR: [{ endDate: null }, { endDate: { gte: periodStart } }],
+        },
+        select: {
+          id: true,
+          amount: true,
+          type: true,
+          frequency: true,
+          startDate: true,
+          lastProcessedAt: true,
+        },
+      }),
+      this.prisma.payable.findMany({
+        where: {
+          userId: period.userId,
+          competenceMonth: period.month,
+          competenceYear: period.year,
+          status: 'PAID',
+          recurrenceId: { not: null },
+          deletedAt: null,
+        },
+        select: { recurrenceId: true },
+      }),
+    ]);
+    const paidRecurrenceIds = new Set(paidPayables.map((item) => item.recurrenceId));
     const due = recurrences.filter(
       (item) =>
-        item.frequency !== RecurrenceFrequency.YEARLY ||
-        item.startDate.getUTCMonth() === period.month - 1,
+        (item.frequency !== RecurrenceFrequency.YEARLY ||
+          item.startDate.getUTCMonth() === period.month - 1) &&
+        (item.type === TransactionType.EXPENSE
+          ? !paidRecurrenceIds.has(item.id)
+          : !item.lastProcessedAt ||
+            item.lastProcessedAt < periodStart ||
+            item.lastProcessedAt >= periodEnd),
     );
     const income = due
       .filter((item) => item.type === TransactionType.INCOME)

@@ -1,7 +1,7 @@
 'use client';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { api, decimal } from '@/lib/api';
-import type { FinanceData, TransactionType } from '@/lib/types';
+import type { FinanceData, FinancialGoalCategory, TransactionType } from '@/lib/types';
 
 const empty: FinanceData = {
   categories: [],
@@ -14,9 +14,13 @@ const empty: FinanceData = {
     transactionCount: 0,
     goals: { totalGoalAmount: '0', progressPercentage: 0 },
   },
-  goals: [],
+  budgets: [],
+  financialGoals: [],
+  payables: [],
   recurrences: [],
   charts: { spendingByCategory: [], goalsByCategory: [] },
+  investment: null,
+  previousSummary: null,
 };
 type Context = {
   data: FinanceData;
@@ -32,6 +36,26 @@ type Context = {
   remove(path: string): Promise<void>;
   processRecurrences(): Promise<void>;
   upsertGoal(categoryId: string, value: number): Promise<void>;
+  createFinancialGoal(input: {
+    name: string;
+    targetAmount: number;
+    currentAmount: number;
+    targetDate?: string;
+    category: FinancialGoalCategory;
+  }): Promise<void>;
+  updateFinancialGoal(
+    id: string,
+    input: Partial<{
+      name: string;
+      targetAmount: number;
+      currentAmount: number;
+      targetDate: string;
+      category: FinancialGoalCategory;
+    }>,
+  ): Promise<void>;
+  payPayable(id: string): Promise<void>;
+  valuesVisible: boolean;
+  toggleValues(): void;
 };
 export type FormInput = {
   description: string;
@@ -48,20 +72,50 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const [data, setData] = useState(empty);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [valuesVisible, setValuesVisible] = useState(true);
   const refresh = useCallback(async () => {
     setLoading(true);
     setError('');
     const q = `month=${month}&year=${year}`;
     try {
-      const [categories, history, summary, charts, goals, recurrences] = await Promise.all([
+      const previous = month === 1 ? { month: 12, year: year - 1 } : { month: month - 1, year };
+      const [
+        categories,
+        history,
+        summary,
+        charts,
+        budgets,
+        recurrences,
+        financialGoals,
+        payables,
+        investment,
+        previousSummary,
+      ] = await Promise.all([
         api<FinanceData['categories']>('/categories'),
         api<{ items: FinanceData['transactions'] }>(`/transactions/history?${q}&limit=100`),
         api<FinanceData['summary']>(`/dashboard/monthly-summary?${q}`),
         api<FinanceData['charts']>(`/dashboard/charts?${q}`),
-        api<FinanceData['goals']>(`/goals?${q}`),
+        api<FinanceData['budgets']>(`/budgets?${q}`),
         api<FinanceData['recurrences']>('/recurrences'),
+        api<FinanceData['financialGoals']>('/goals'),
+        api<FinanceData['payables']>(`/payables?${q}`),
+        api<NonNullable<FinanceData['investment']>>(`/investments/overview?${q}`),
+        api<FinanceData['summary']>(
+          `/dashboard/monthly-summary?month=${previous.month}&year=${previous.year}`,
+        ),
       ]);
-      setData({ categories, transactions: history.items, summary, charts, goals, recurrences });
+      setData({
+        categories,
+        transactions: history.items,
+        summary,
+        charts,
+        budgets,
+        recurrences,
+        financialGoals,
+        payables,
+        investment,
+        previousSummary,
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Erro ao carregar dados.');
     } finally {
@@ -140,13 +194,36 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         ),
       upsertGoal: (categoryId, amount) =>
         mutate(() =>
-          api('/goals', {
+          api('/budgets', {
             method: 'PUT',
             body: JSON.stringify({ categoryId, amount: decimal(amount), month, year }),
           }),
         ),
+      createFinancialGoal: (input) =>
+        mutate(() =>
+          api('/goals', {
+            method: 'POST',
+            body: JSON.stringify({
+              name: input.name,
+              targetAmount: decimal(input.targetAmount),
+              currentAmount: decimal(input.currentAmount),
+              targetDate: input.targetDate || undefined,
+              category: input.category,
+            }),
+          }),
+        ),
+      updateFinancialGoal: (id, input) =>
+        mutate(() => {
+          const body: Record<string, unknown> = { ...input };
+          if (input.targetAmount !== undefined) body.targetAmount = decimal(input.targetAmount);
+          if (input.currentAmount !== undefined) body.currentAmount = decimal(input.currentAmount);
+          return api(`/goals/${id}`, { method: 'PATCH', body: JSON.stringify(body) });
+        }),
+      payPayable: (id) => mutate(() => api(`/payables/${id}/pay`, { method: 'PATCH' })),
+      valuesVisible,
+      toggleValues: () => setValuesVisible((visible) => !visible),
     }),
-    [data, month, year, loading, error, refresh],
+    [data, month, year, loading, error, refresh, valuesVisible],
   );
   return <FinanceContext.Provider value={value}>{children}</FinanceContext.Provider>;
 }

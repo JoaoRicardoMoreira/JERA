@@ -37,6 +37,10 @@ export class InvestmentMapper {
       contribution.contributedAt,
       contribution.month,
       contribution.year,
+      contribution.selicAnnualRatePercent
+        ? new Prisma.Decimal(contribution.selicAnnualRatePercent).toFixed(4)
+        : null,
+      contribution.selicReferenceDate,
       contribution.createdAt,
       contribution.updatedAt,
       contribution.deletedAt,
@@ -61,6 +65,11 @@ export class InvestmentMapper {
       contributedAt: contribution.contributedAt.toISOString(),
       month: contribution.month,
       year: contribution.year,
+      selicAnnualRatePercent: contribution.selicAnnualRatePercent,
+      selicReferenceDate: contribution.selicReferenceDate?.toISOString() ?? null,
+      monthlyEquivalentRatePercent: contribution.selicAnnualRatePercent
+        ? InvestmentMapper.monthlyEquivalentPercent(contribution.selicAnnualRatePercent)
+        : null,
       createdAt: contribution.createdAt.toISOString(),
       updatedAt: contribution.updatedAt.toISOString(),
     };
@@ -68,5 +77,12 @@ export class InvestmentMapper {
 
   static toTimelineResponse(point: InvestmentTimelinePoint): InvestmentTimelinePointResponseDto {
     return point;
+  }
+
+  static monthlyEquivalentPercent(annualRatePercent: string): string {
+    const annualRate = Number(annualRatePercent) / 100;
+    const monthlyRate = (Math.pow(1 + annualRate, 1 / 12) - 1) * 100;
+
+    return new Prisma.Decimal(monthlyRate).toDecimalPlaces(4).toFixed(4);
   }
 }

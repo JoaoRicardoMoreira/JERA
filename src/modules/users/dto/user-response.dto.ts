@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Role } from '@prisma/client';
+import { Gender, Role } from '@prisma/client';
 import { Expose } from 'class-transformer';
 
 export class UserResponseDto {
@@ -17,6 +17,38 @@ export class UserResponseDto {
   @ApiProperty({ example: 'user@example.com' })
   @Expose()
   email: string;
+
+  @ApiProperty({ example: '1995-08-17', nullable: true })
+  @Expose()
+  birthDate: string | null;
+
+  @ApiProperty({ example: 30, nullable: true })
+  @Expose()
+  age: number | null;
+
+  @ApiProperty({ enum: Gender, nullable: true })
+  @Expose()
+  gender: Gender | null;
+
+  @ApiProperty({ example: '+55 11 99999-9999', nullable: true })
+  @Expose()
+  phone: string | null;
+
+  @ApiProperty({ example: 'Desenvolvedor de software', nullable: true })
+  @Expose()
+  occupation: string | null;
+
+  @ApiProperty({ example: 'Sao Paulo', nullable: true })
+  @Expose()
+  city: string | null;
+
+  @ApiProperty({ example: 'SP', nullable: true })
+  @Expose()
+  state: string | null;
+
+  @ApiProperty({ example: 'Construindo uma jornada mais previsivel.', nullable: true })
+  @Expose()
+  bio: string | null;
 
   @ApiProperty({ enum: Role, isArray: true, example: [Role.USER] })
   @Expose()

@@ -1,6 +1,7 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 
 import { UserResponseDto } from './dto/user-response.dto';
+import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
 import { UserEntity } from './entities/user.entity';
 import { USERS_REPOSITORY, UserRepository } from './interfaces/user-repository.interface';
 import { UserService } from './interfaces/user-service.interface';
@@ -31,5 +32,39 @@ export class UsersService implements UserService {
     const user = await this.findById(userId);
 
     return UserMapper.toResponse(user);
+  }
+
+  async updateCurrentUser(userId: string, dto: UpdateUserProfileDto): Promise<UserResponseDto> {
+    await this.findById(userId);
+
+    const birthDate =
+      dto.birthDate === undefined
+        ? undefined
+        : dto.birthDate
+          ? new Date(`${dto.birthDate}T00:00:00.000Z`)
+          : null;
+
+    if (birthDate && birthDate > new Date()) {
+      throw new BadRequestException({
+        code: 'INVALID_BIRTH_DATE',
+        message: 'A data de nascimento nao pode estar no futuro.',
+      });
+    }
+
+    const optionalText = (value: string | null | undefined) =>
+      value === undefined ? undefined : value?.trim() || null;
+
+    const updated = await this.usersRepository.updateProfile(userId, {
+      name: dto.name?.trim(),
+      birthDate,
+      gender: dto.gender,
+      phone: optionalText(dto.phone),
+      occupation: optionalText(dto.occupation),
+      city: optionalText(dto.city),
+      state: optionalText(dto.state),
+      bio: optionalText(dto.bio),
+    });
+
+    return UserMapper.toResponse(updated);
   }
 }

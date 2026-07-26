@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
 import { UserEntity } from './entities/user.entity';
-import { UserRepository } from './interfaces/user-repository.interface';
+import { UpdateUserProfileData, UserRepository } from './interfaces/user-repository.interface';
 import { UserMapper } from './mapper/user.mapper';
 
 @Injectable()
@@ -29,5 +29,14 @@ export class UsersRepository implements UserRepository {
     });
 
     return user ? UserMapper.toEntity(user) : null;
+  }
+
+  async updateProfile(id: string, data: UpdateUserProfileData): Promise<UserEntity> {
+    const user = await this.prisma.user.update({
+      where: { id },
+      data,
+    });
+
+    return UserMapper.toEntity(user);
   }
 }

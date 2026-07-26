@@ -12,6 +12,8 @@ const defaultPermissions = [
   'transactions:update',
   'transactions:delete',
   'goals:manage',
+  'financial-goals:manage',
+  'payables:manage',
   'recurrences:manage',
   'dashboard:read',
   'investments:read',

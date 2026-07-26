@@ -53,11 +53,11 @@ export function TransactionModal({
         <h2>
           {editing
             ? type === 'INCOME'
-              ? 'Editar Renda'
-              : 'Editar Gasto'
+              ? 'Editar Receita'
+              : 'Editar Despesa'
             : type === 'INCOME'
-              ? 'Nova Renda'
-              : 'Novo Gasto'}
+              ? 'Nova Receita'
+              : 'Nova Despesa'}
         </h2>
         <label>
           Descrição
