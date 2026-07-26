@@ -5,6 +5,7 @@ import { CreateExpenseDto } from './dto/create-expense.dto';
 import { CreateIncomeDto } from './dto/create-income.dto';
 import { TransactionQueryDto } from './dto/transaction-query.dto';
 import { TransactionResponseDto } from './dto/transaction-response.dto';
+import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { TransactionEntity } from './entities/transaction.entity';
 import { TransactionType } from './entities/transaction-type.enum';
 import {
@@ -58,6 +59,39 @@ export class TransactionsService implements TransactionService {
       items: result.items.map(TransactionMapper.toResponse),
       meta: result.meta,
     };
+  }
+
+  async updateTransaction(
+    userId: string,
+    transactionId: string,
+    dto: UpdateTransactionDto,
+  ): Promise<TransactionResponseDto> {
+    const existingTransaction = this.transactionValidator.ensureTransactionFound(
+      await this.transactionsRepository.findByIdForUser(userId, transactionId),
+    );
+
+    if (dto.categoryId) {
+      const category = await this.transactionsRepository.findCategoryForUser(
+        userId,
+        dto.categoryId,
+      );
+
+      this.transactionValidator.ensureCategoryMatchesTransactionType(
+        category,
+        existingTransaction.type,
+      );
+    }
+
+    const updatedTransaction = this.transactionValidator.ensureTransactionFound(
+      await this.transactionsRepository.update(userId, transactionId, {
+        categoryId: dto.categoryId ?? null,
+        amount: dto.amount,
+        description: this.normalizeDescription(dto.description),
+        occurredAt: new Date(dto.occurredAt),
+      }),
+    );
+
+    return TransactionMapper.toResponse(updatedTransaction);
   }
 
   async getTransactionsForExport(

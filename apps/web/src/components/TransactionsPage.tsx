@@ -4,10 +4,11 @@ import { date, money } from '@/lib/api';
 import { useFinance } from './FinanceProvider';
 import { PageChrome } from './PageChrome';
 import { TransactionModal } from './TransactionModal';
-import type { TransactionType } from '@/lib/types';
+import type { Transaction, TransactionType } from '@/lib/types';
 export function TransactionsPage({ type }: { type: TransactionType }) {
   const { data, remove } = useFinance();
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Transaction | null>(null);
   const items = data.transactions.filter((t) => t.type === type);
   const total = type === 'INCOME' ? data.summary.totalIncome : data.summary.totalExpense;
   const breakdown = Object.values(
@@ -25,7 +26,10 @@ export function TransactionsPage({ type }: { type: TransactionType }) {
         action={
           <button
             className={type === 'INCOME' ? 'button primary' : 'button secondary'}
-            onClick={() => setOpen(true)}
+            onClick={() => {
+              setEditing(null);
+              setOpen(true);
+            }}
           >
             + {type === 'INCOME' ? 'Nova Renda' : 'Novo Gasto'}
           </button>
@@ -86,14 +90,25 @@ export function TransactionsPage({ type }: { type: TransactionType }) {
                     {type === 'INCOME' ? '+' : '-'} {money(t.amount)}
                   </td>
                   <td>
-                    <button
-                      className="text-button"
-                      onClick={() =>
-                        confirm('Excluir este lancamento?') && remove(`/transactions/${t.id}`)
-                      }
-                    >
-                      Excluir
-                    </button>
+                    <div className="table-actions">
+                      <button
+                        className="text-button"
+                        onClick={() => {
+                          setEditing(t);
+                          setOpen(true);
+                        }}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        className="text-button delete"
+                        onClick={() =>
+                          confirm('Excluir este lancamento?') && remove(`/transactions/${t.id}`)
+                        }
+                      >
+                        Excluir
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -108,7 +123,15 @@ export function TransactionsPage({ type }: { type: TransactionType }) {
           </table>
         </div>
       </section>
-      <TransactionModal type={type} open={open} onClose={() => setOpen(false)} />
+      <TransactionModal
+        type={type}
+        open={open}
+        transaction={editing}
+        onClose={() => {
+          setOpen(false);
+          setEditing(null);
+        }}
+      />
     </>
   );
 }

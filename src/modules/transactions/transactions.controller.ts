@@ -8,6 +8,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Put,
   Query,
 } from '@nestjs/common';
 import {
@@ -33,6 +34,7 @@ import { CreateExpenseDto } from './dto/create-expense.dto';
 import { CreateIncomeDto } from './dto/create-income.dto';
 import { TransactionQueryDto } from './dto/transaction-query.dto';
 import { TransactionResponseDto } from './dto/transaction-response.dto';
+import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { TransactionsService } from './transactions.service';
 import { TransactionValidator } from './validators/transaction.validator';
 
@@ -104,6 +106,35 @@ export class TransactionsController {
     const userId = this.transactionValidator.ensureAuthenticatedUserId(user?.id);
 
     return this.transactionsService.getHistory(userId, query);
+  }
+
+  @Put(':id')
+  @Permissions(Permission.TRANSACTIONS_UPDATE)
+  @ApiOperation({
+    summary: 'Atualiza uma transacao do usuario autenticado.',
+    description: 'Altera valor, descricao, categoria e data sem modificar o tipo da transacao.',
+  })
+  @ApiParam({
+    name: 'id',
+    format: 'uuid',
+    example: '7f923c74-4c4b-4798-a5cf-d4098d561d70',
+  })
+  @ApiOkResponse({ type: TransactionResponseDto })
+  @ApiBadRequestResponse({ description: 'Payload ou parametro `id` invalido.' })
+  @ApiUnauthorizedResponse({ description: 'JWT ausente, invalido ou usuario sem contexto.' })
+  @ApiForbiddenResponse({ description: 'Usuario sem permissao para atualizar transacoes.' })
+  @ApiNotFoundResponse({ description: 'Transacao ou categoria nao encontrada.' })
+  @ApiUnprocessableEntityResponse({
+    description: 'Categoria nao corresponde ao tipo da transacao.',
+  })
+  async updateTransaction(
+    @CurrentUser() user: RequestUser | undefined,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateTransactionDto,
+  ): Promise<TransactionResponseDto> {
+    const userId = this.transactionValidator.ensureAuthenticatedUserId(user?.id);
+
+    return this.transactionsService.updateTransaction(userId, id, dto);
   }
 
   @Delete(':id')

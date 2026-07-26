@@ -16,6 +16,13 @@ export interface CreateTransactionData {
   occurredAt: Date;
 }
 
+export interface UpdateTransactionData {
+  categoryId: string | null;
+  amount: string;
+  description?: string;
+  occurredAt: Date;
+}
+
 export interface TransactionHistoryFilter extends PaginationOptions {
   userId: string;
   month: number;
@@ -30,6 +37,12 @@ export interface TransactionCategoryReference {
 
 export interface TransactionRepository {
   create(data: CreateTransactionData): Promise<TransactionEntity>;
+  findByIdForUser(userId: string, transactionId: string): Promise<TransactionEntity | null>;
+  update(
+    userId: string,
+    transactionId: string,
+    data: UpdateTransactionData,
+  ): Promise<TransactionEntity | null>;
   findHistory(filter: TransactionHistoryFilter): Promise<PaginatedResult<TransactionEntity>>;
   softDelete(userId: string, transactionId: string): Promise<boolean>;
   findCategoryForUser(

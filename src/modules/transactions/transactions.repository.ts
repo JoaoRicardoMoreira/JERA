@@ -11,6 +11,7 @@ import {
   TransactionCategoryReference,
   TransactionHistoryFilter,
   TransactionRepository,
+  UpdateTransactionData,
 } from './interfaces/transaction-repository.interface';
 import { TransactionMapper } from './mapper/transaction.mapper';
 
@@ -53,6 +54,64 @@ export class TransactionsRepository implements TransactionRepository {
     });
 
     return TransactionMapper.toEntity(transaction);
+  }
+
+  async findByIdForUser(userId: string, transactionId: string): Promise<TransactionEntity | null> {
+    const transaction = await this.prisma.transaction.findFirst({
+      where: {
+        id: transactionId,
+        userId,
+        deletedAt: null,
+      },
+      include: {
+        category: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    return transaction ? TransactionMapper.toEntity(transaction) : null;
+  }
+
+  async update(
+    userId: string,
+    transactionId: string,
+    data: UpdateTransactionData,
+  ): Promise<TransactionEntity | null> {
+    const transaction = await this.prisma.$transaction(async (prisma) => {
+      const result = await prisma.transaction.updateMany({
+        where: {
+          id: transactionId,
+          userId,
+          deletedAt: null,
+        },
+        data: {
+          categoryId: data.categoryId,
+          amount: new Prisma.Decimal(data.amount),
+          description: data.description,
+          occurredAt: data.occurredAt,
+        },
+      });
+
+      if (!result.count) {
+        return null;
+      }
+
+      return prisma.transaction.findUnique({
+        where: { id: transactionId },
+        include: {
+          category: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      });
+    });
+
+    return transaction ? TransactionMapper.toEntity(transaction) : null;
   }
 
   async createMany(data: ImportTransactionData[]): Promise<number> {

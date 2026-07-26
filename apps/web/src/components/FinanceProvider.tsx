@@ -27,6 +27,7 @@ type Context = {
   setPeriod(m: number, y: number): void;
   refresh(): Promise<void>;
   createTransaction(type: TransactionType, input: FormInput): Promise<void>;
+  updateTransaction(id: string, input: FormInput): Promise<void>;
   createRecurrence(input: FormInput & { type: TransactionType; day: number }): Promise<void>;
   remove(path: string): Promise<void>;
   processRecurrences(): Promise<void>;
@@ -101,6 +102,18 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             body: JSON.stringify({
               amount: decimal(v.amount),
               categoryId: v.categoryId || undefined,
+              description: v.description,
+              occurredAt: `${v.occurredAt || new Date().toISOString().slice(0, 10)}T12:00:00.000Z`,
+            }),
+          }),
+        ),
+      updateTransaction: (id, v) =>
+        mutate(() =>
+          api(`/transactions/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+              amount: decimal(v.amount),
+              categoryId: v.categoryId || null,
               description: v.description,
               occurredAt: `${v.occurredAt || new Date().toISOString().slice(0, 10)}T12:00:00.000Z`,
             }),

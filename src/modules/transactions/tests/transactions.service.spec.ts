@@ -33,6 +33,8 @@ describe('TransactionsService', () => {
   beforeEach(async () => {
     repository = {
       create: jest.fn(),
+      findByIdForUser: jest.fn(),
+      update: jest.fn(),
       findHistory: jest.fn(),
       softDelete: jest.fn(),
       findCategoryForUser: jest.fn(),
@@ -155,6 +157,67 @@ describe('TransactionsService', () => {
     });
     expect(response.items).toHaveLength(1);
     expect(response.meta.totalItems).toBe(1);
+  });
+
+  it('should update a transaction without changing its type', async () => {
+    const updatedTransaction = new TransactionEntity(
+      transaction.id,
+      userId,
+      categoryId,
+      '150.00',
+      TransactionType.EXPENSE,
+      'Mercado do mes',
+      new Date('2026-07-04T12:00:00.000Z'),
+      transaction.createdAt,
+      new Date('2026-07-04T12:01:00.000Z'),
+      null,
+      'Alimentacao',
+    );
+    repository.findByIdForUser.mockResolvedValue(transaction);
+    repository.findCategoryForUser.mockResolvedValue({
+      id: categoryId,
+      type: TransactionType.EXPENSE,
+    });
+    repository.update.mockResolvedValue(updatedTransaction);
+
+    const response = await service.updateTransaction(userId, transaction.id, {
+      amount: '150.00',
+      categoryId,
+      description: '  Mercado   do mes ',
+      occurredAt: '2026-07-04T12:00:00.000Z',
+    });
+
+    expect(repository.findByIdForUser).toHaveBeenCalledWith(userId, transaction.id);
+    expect(repository.update).toHaveBeenCalledWith(userId, transaction.id, {
+      categoryId,
+      amount: '150.00',
+      description: 'Mercado do mes',
+      occurredAt: new Date('2026-07-04T12:00:00.000Z'),
+    });
+    expect(response).toEqual(
+      expect.objectContaining({
+        id: transaction.id,
+        type: TransactionType.EXPENSE,
+        amount: '150.00',
+      }),
+    );
+  });
+
+  it('should reject updates to transactions outside the user scope', async () => {
+    repository.findByIdForUser.mockResolvedValue(null);
+
+    await expect(
+      service.updateTransaction(userId, transaction.id, {
+        amount: '150.00',
+        categoryId: null,
+        occurredAt: '2026-07-04T12:00:00.000Z',
+      }),
+    ).rejects.toMatchObject({
+      response: {
+        code: 'TRANSACTION_NOT_FOUND',
+      },
+    });
+    expect(repository.update).not.toHaveBeenCalled();
   });
 
   it('should soft delete a transaction owned by the authenticated user', async () => {

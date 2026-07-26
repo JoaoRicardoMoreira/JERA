@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 
 import { TransactionType } from '../entities/transaction-type.enum';
+import { TransactionEntity } from '../entities/transaction.entity';
 import { TransactionValidator } from '../validators/transaction.validator';
 
 describe('TransactionValidator', () => {
@@ -22,6 +23,13 @@ describe('TransactionValidator', () => {
   it('throws when a transaction was not deleted', () => {
     expect(() => validator.ensureTransactionDeleted(false)).toThrow(NotFoundException);
     expect(() => validator.ensureTransactionDeleted(true)).not.toThrow();
+  });
+
+  it('returns an existing transaction and rejects a missing transaction', () => {
+    const transaction = {} as TransactionEntity;
+
+    expect(validator.ensureTransactionFound(transaction)).toBe(transaction);
+    expect(() => validator.ensureTransactionFound(null)).toThrow(NotFoundException);
   });
 
   it('validates category existence and type compatibility', () => {

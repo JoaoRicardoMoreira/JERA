@@ -317,6 +317,15 @@ a.card:hover {
 .text-button:hover {
   color: var(--expense);
 }
+.table-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  white-space: nowrap;
+}
+.table-actions .text-button:not(.delete):hover {
+  color: var(--income);
+}
 input,
 select {
   width: 100%;

@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 
 import { TransactionType } from '../entities/transaction-type.enum';
+import { TransactionEntity } from '../entities/transaction.entity';
 import { TransactionCategoryReference } from '../interfaces/transaction-repository.interface';
 
 @Injectable()
@@ -28,6 +29,17 @@ export class TransactionValidator {
         message: 'Transacao nao encontrada para o usuario autenticado.',
       });
     }
+  }
+
+  ensureTransactionFound(transaction: TransactionEntity | null): TransactionEntity {
+    if (!transaction) {
+      throw new NotFoundException({
+        code: 'TRANSACTION_NOT_FOUND',
+        message: 'Transacao nao encontrada para o usuario autenticado.',
+      });
+    }
+
+    return transaction;
   }
 
   ensureCategoryMatchesTransactionType(
