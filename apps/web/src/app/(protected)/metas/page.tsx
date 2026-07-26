@@ -5,14 +5,25 @@ import { FormEvent, useState } from 'react';
 import { Icon } from '@/components/Icon';
 import { PageChrome } from '@/components/PageChrome';
 import { useFinance } from '@/components/FinanceProvider';
-import { date, money } from '@/lib/api';
+import { api, date, money } from '@/lib/api';
 import { FINANCIAL_GOAL_CATEGORIES, getFinancialGoalCategory } from '@/lib/financial-goals';
-import type { FinancialGoal, FinancialGoalCategory } from '@/lib/types';
+import type { FinancialGoal, FinancialGoalCategory, FinancialGoalContribution } from '@/lib/types';
 
 export default function GoalsPage() {
-  const { data, createFinancialGoal, updateFinancialGoal, remove, valuesVisible } = useFinance();
+  const {
+    data,
+    createFinancialGoal,
+    updateFinancialGoal,
+    contributeToFinancialGoal,
+    remove,
+    valuesVisible,
+  } = useFinance();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<FinancialGoal | null>(null);
+  const [contributing, setContributing] = useState<FinancialGoal | null>(null);
+  const [contributions, setContributions] = useState<FinancialGoalContribution[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [contributionError, setContributionError] = useState('');
   const visibleMoney = (value: string) => (valuesVisible ? money(value) : 'R$ ••••••');
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -21,7 +32,6 @@ export default function GoalsPage() {
     const input = {
       name: String(form.get('name')),
       targetAmount: Number(form.get('targetAmount')),
-      currentAmount: Number(form.get('currentAmount')),
       targetDate: String(form.get('targetDate') || '') || undefined,
       category: String(form.get('category')) as FinancialGoalCategory,
     };
@@ -29,6 +39,42 @@ export default function GoalsPage() {
     else await createFinancialGoal(input);
     setOpen(false);
     setEditing(null);
+  }
+
+  async function openContribution(goal: FinancialGoal) {
+    setContributing(goal);
+    setHistoryLoading(true);
+    setContributionError('');
+    try {
+      setContributions(await api<FinancialGoalContribution[]>(`/goals/${goal.id}/contributions`));
+    } catch (reason) {
+      setContributions([]);
+      setContributionError(
+        reason instanceof Error ? reason.message : 'Não foi possível consultar os aportes.',
+      );
+    } finally {
+      setHistoryLoading(false);
+    }
+  }
+
+  async function submitContribution(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!contributing) return;
+    const form = new FormData(event.currentTarget);
+    setContributionError('');
+    try {
+      await contributeToFinancialGoal(
+        contributing.id,
+        Number(form.get('amount')),
+        String(form.get('contributedAt')),
+      );
+      setContributing(null);
+      setContributions([]);
+    } catch (reason) {
+      setContributionError(
+        reason instanceof Error ? reason.message : 'Não foi possível registrar o aporte.',
+      );
+    }
   }
 
   return (
@@ -103,6 +149,15 @@ export default function GoalsPage() {
                       : `Faltam ${visibleMoney(goal.remainingAmount)}`}
                 </p>
                 <footer>
+                  {goal.status !== 'COMPLETED' && (
+                    <button
+                      className="goal-contribute-action"
+                      onClick={() => openContribution(goal)}
+                    >
+                      <Icon name="plus" size={13} />
+                      Aportar
+                    </button>
+                  )}
                   <button
                     onClick={() => {
                       setEditing(goal);
@@ -122,10 +177,19 @@ export default function GoalsPage() {
             );
           })}
           {!data.financialGoals.length && (
-            <button className="goal-card new-goal" onClick={() => setOpen(true)}>
-              <span>+</span>
-              <h3>Crie sua primeira meta</h3>
-              <p>Defina um valor e acompanhe seu avanço.</p>
+            <button className="goal-card new-goal new-goal-themed" onClick={() => setOpen(true)}>
+              <span className="new-goal-art" aria-hidden="true">
+                <Image src="/brand/jera-goal-other.jpg" fill sizes="520px" alt="" />
+              </span>
+              <span className="new-goal-rune" aria-hidden="true">
+                ᛟ
+              </span>
+              <small>Primeiro destino</small>
+              <h3>Trace sua primeira conquista</h3>
+              <p>Todo grande caminho começa com uma meta clara e o primeiro aporte.</p>
+              <b>
+                Criar meta <span aria-hidden="true">→</span>
+              </b>
             </button>
           )}
         </div>
@@ -165,30 +229,17 @@ export default function GoalsPage() {
                 required
               />
             </label>
-            <div className="form-grid">
-              <label>
-                Valor alvo
-                <input
-                  name="targetAmount"
-                  type="number"
-                  min=".01"
-                  step=".01"
-                  defaultValue={editing?.targetAmount}
-                  required
-                />
-              </label>
-              <label>
-                Valor acumulado
-                <input
-                  name="currentAmount"
-                  type="number"
-                  min="0"
-                  step=".01"
-                  defaultValue={editing?.currentAmount || 0}
-                  required
-                />
-              </label>
-            </div>
+            <label>
+              Valor alvo
+              <input
+                name="targetAmount"
+                type="number"
+                min=".01"
+                step=".01"
+                defaultValue={editing?.targetAmount}
+                required
+              />
+            </label>
             <label>
               Data desejada
               <input
@@ -198,6 +249,87 @@ export default function GoalsPage() {
               />
             </label>
             <button className="button primary">Salvar meta</button>
+          </form>
+        </div>
+      )}
+      {contributing && (
+        <div
+          className="overlay"
+          onMouseDown={(event) => event.target === event.currentTarget && setContributing(null)}
+        >
+          <form className="modal goal-contribution-modal" onSubmit={submitContribution}>
+            <button
+              type="button"
+              className="close"
+              aria-label="Fechar"
+              onClick={() => setContributing(null)}
+            >
+              ×
+            </button>
+            <small>Aporte de jornada</small>
+            <h2>{contributing.name}</h2>
+            <div className="contribution-summary">
+              <span>
+                <small>Acumulado</small>
+                <strong>{visibleMoney(contributing.currentAmount)}</strong>
+              </span>
+              <span>
+                <small>Falta conquistar</small>
+                <strong>{visibleMoney(contributing.remainingAmount)}</strong>
+              </span>
+            </div>
+            <div className="form-grid">
+              <label>
+                Valor do aporte
+                <input
+                  name="amount"
+                  type="number"
+                  min=".01"
+                  max={contributing.remainingAmount}
+                  step=".01"
+                  placeholder="R$ 0,00"
+                  autoFocus
+                  required
+                />
+              </label>
+              <label>
+                Data do aporte
+                <input
+                  name="contributedAt"
+                  type="date"
+                  max={new Date().toISOString().slice(0, 10)}
+                  defaultValue={new Date().toISOString().slice(0, 10)}
+                  required
+                />
+              </label>
+            </div>
+            <div className="contribution-balance-note">
+              <Icon name="nordicGoals" size={17} />
+              Este valor será reservado e debitado do saldo disponível no mês da data informada.
+            </div>
+            {contributionError && <div className="error">{contributionError}</div>}
+            <button className="button primary">Confirmar aporte</button>
+            <section className="contribution-history">
+              <header>
+                <span className="eyebrow">Histórico</span>
+                <small>{contributions.length} aportes</small>
+              </header>
+              {historyLoading ? (
+                <p>Consultando registros...</p>
+              ) : contributions.length ? (
+                contributions.map((contribution) => (
+                  <div key={contribution.id}>
+                    <span>
+                      <Icon name="check" size={13} />
+                      {date(contribution.contributedAt)}
+                    </span>
+                    <strong>+ {visibleMoney(contribution.amount)}</strong>
+                  </div>
+                ))
+              ) : (
+                <p>Esta meta ainda não recebeu aportes registrados.</p>
+              )}
+            </section>
           </form>
         </div>
       )}

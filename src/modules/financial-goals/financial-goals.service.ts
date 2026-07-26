@@ -1,9 +1,17 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { FinancialGoal, FinancialGoalCategory, FinancialGoalStatus, Prisma } from '@prisma/client';
+import {
+  FinancialGoal,
+  FinancialGoalCategory,
+  FinancialGoalContribution,
+  FinancialGoalStatus,
+  Prisma,
+} from '@prisma/client';
 
 import { PrismaService } from '../../database/prisma.service';
 import {
   CreateFinancialGoalDto,
+  CreateFinancialGoalContributionDto,
+  FinancialGoalContributionResponseDto,
   FinancialGoalResponseDto,
   UpdateFinancialGoalDto,
 } from './dto/financial-goal.dto';
@@ -56,9 +64,7 @@ export class FinancialGoalsService {
     const targetAmount = dto.targetAmount
       ? this.positive(dto.targetAmount, 'O valor alvo deve ser maior que zero.')
       : current.targetAmount;
-    const currentAmount = dto.currentAmount
-      ? this.nonNegative(dto.currentAmount, 'O valor acumulado nao pode ser negativo.')
-      : current.currentAmount;
+    const currentAmount = current.currentAmount;
     const computedStatus =
       dto.status ??
       (currentAmount.greaterThanOrEqualTo(targetAmount)
@@ -77,6 +83,72 @@ export class FinancialGoalsService {
       },
     });
     return this.toResponse(goal);
+  }
+
+  async listContributions(
+    userId: string,
+    financialGoalId: string,
+  ): Promise<FinancialGoalContributionResponseDto[]> {
+    await this.ensureGoal(userId, financialGoalId);
+    const contributions = await this.prisma.financialGoalContribution.findMany({
+      where: { userId, financialGoalId, deletedAt: null },
+      orderBy: [{ contributedAt: 'desc' }, { createdAt: 'desc' }],
+    });
+
+    return contributions.map((contribution) => this.toContributionResponse(contribution));
+  }
+
+  async contribute(
+    userId: string,
+    financialGoalId: string,
+    dto: CreateFinancialGoalContributionDto,
+  ): Promise<FinancialGoalContributionResponseDto> {
+    const amount = this.positive(dto.amount, 'O valor do aporte deve ser maior que zero.');
+    const contributedAt = dto.contributedAt
+      ? new Date(`${dto.contributedAt}T12:00:00.000Z`)
+      : new Date();
+    const endOfToday = new Date();
+    endOfToday.setUTCHours(23, 59, 59, 999);
+    if (contributedAt > endOfToday) {
+      throw new BadRequestException('A data do aporte nao pode estar no futuro.');
+    }
+
+    return this.prisma.$transaction(async (transaction) => {
+      const goal = await transaction.financialGoal.findFirst({
+        where: { id: financialGoalId, userId, deletedAt: null },
+      });
+      if (!goal) throw new NotFoundException('Meta financeira nao encontrada.');
+
+      const currentAmount = new Prisma.Decimal(goal.currentAmount);
+      const targetAmount = new Prisma.Decimal(goal.targetAmount);
+      const remainingAmount = Prisma.Decimal.max(targetAmount.minus(currentAmount), 0);
+      if (amount.greaterThan(remainingAmount)) {
+        throw new BadRequestException(
+          `O aporte excede o valor restante da meta (${remainingAmount.toFixed(2)}).`,
+        );
+      }
+
+      const contribution = await transaction.financialGoalContribution.create({
+        data: {
+          userId,
+          financialGoalId,
+          amount,
+          contributedAt,
+        },
+      });
+      const nextAmount = currentAmount.plus(amount);
+      await transaction.financialGoal.update({
+        where: { id: financialGoalId },
+        data: {
+          currentAmount: nextAmount,
+          status: nextAmount.greaterThanOrEqualTo(targetAmount)
+            ? FinancialGoalStatus.COMPLETED
+            : FinancialGoalStatus.ACTIVE,
+        },
+      });
+
+      return this.toContributionResponse(contribution);
+    });
   }
 
   async remove(userId: string, id: string): Promise<void> {
@@ -107,6 +179,26 @@ export class FinancialGoalsService {
       category: goal.category,
       status: goal.status,
     };
+  }
+
+  private toContributionResponse(
+    contribution: FinancialGoalContribution,
+  ): FinancialGoalContributionResponseDto {
+    return {
+      id: contribution.id,
+      financialGoalId: contribution.financialGoalId,
+      amount: new Prisma.Decimal(contribution.amount).toFixed(2),
+      contributedAt: contribution.contributedAt.toISOString(),
+      createdAt: contribution.createdAt.toISOString(),
+    };
+  }
+
+  private async ensureGoal(userId: string, id: string): Promise<FinancialGoal> {
+    const goal = await this.prisma.financialGoal.findFirst({
+      where: { id, userId, deletedAt: null },
+    });
+    if (!goal) throw new NotFoundException('Meta financeira nao encontrada.');
+    return goal;
   }
 
   private positive(value: string, message: string): Prisma.Decimal {

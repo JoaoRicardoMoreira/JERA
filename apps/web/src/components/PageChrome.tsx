@@ -91,48 +91,55 @@ export function PageChrome({
           </p>
         </div>
         <div className="header-actions">
-          <label className="period-select">
-            <span className="sr-only">Mês</span>
-            <select value={month} onChange={(event) => setPeriod(Number(event.target.value), year)}>
-              {months.map((label, index) => (
-                <option value={index + 1} key={label}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <input
-            aria-label="Ano"
-            type="number"
-            min="2000"
-            max="2100"
-            value={year}
-            onChange={(event) => setPeriod(month, Number(event.target.value))}
-          />
-          <button
-            className="icon-button"
-            onClick={toggleValues}
-            title={valuesVisible ? 'Ocultar valores' : 'Mostrar valores'}
-            aria-label={valuesVisible ? 'Ocultar valores' : 'Mostrar valores'}
-          >
-            <Icon name={valuesVisible ? 'eye' : 'eyeOff'} />
-          </button>
-          <button
-            className="icon-button notification"
-            title="Notificações"
-            aria-label={`${notifications} notificações`}
-          >
-            <Icon name="bell" />
-            {notifications > 0 && <b>{notifications}</b>}
-          </button>
-          <Link
-            href="/perfil"
-            className="avatar"
-            title={user?.name || 'Perfil'}
-            aria-label="Perfil"
-          >
-            <UserAvatar name={user?.name} gender={gender} />
-          </Link>
+          <div className="period-controls">
+            <label className="period-select">
+              <span className="sr-only">Mês</span>
+              <select
+                value={month}
+                onChange={(event) => setPeriod(Number(event.target.value), year)}
+              >
+                {months.map((label, index) => (
+                  <option value={index + 1} key={label}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <input
+              aria-label="Ano"
+              type="number"
+              min="2000"
+              max="2100"
+              value={year}
+              onChange={(event) => setPeriod(month, Number(event.target.value))}
+            />
+          </div>
+          <div className="header-primary-actions">
+            <button
+              className="icon-button"
+              onClick={toggleValues}
+              title={valuesVisible ? 'Ocultar valores' : 'Mostrar valores'}
+              aria-label={valuesVisible ? 'Ocultar valores' : 'Mostrar valores'}
+            >
+              <Icon name={valuesVisible ? 'eye' : 'eyeOff'} />
+            </button>
+            <button
+              className="icon-button notification"
+              title="Notificações"
+              aria-label={`${notifications} notificações`}
+            >
+              <Icon name="bell" />
+              {notifications > 0 && <b>{notifications}</b>}
+            </button>
+            <Link
+              href="/perfil"
+              className="avatar"
+              title={user?.name || 'Perfil'}
+              aria-label="Perfil"
+            >
+              <UserAvatar name={user?.name} gender={gender} />
+            </Link>
+          </div>
           {action && <div className="quick-actions">{action}</div>}
         </div>
       </header>

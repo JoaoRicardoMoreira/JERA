@@ -29,6 +29,7 @@ export type IconName =
   | 'arrowDown'
   | 'wallet'
   | 'calendar'
+  | 'plus'
   | 'check';
 
 const paths: Record<IconName, React.ReactNode> = {
@@ -232,6 +233,12 @@ const paths: Record<IconName, React.ReactNode> = {
     <>
       <rect x="3" y="5" width="18" height="16" rx="2" />
       <path d="M16 3v4M8 3v4M3 10h18" />
+    </>
+  ),
+  plus: (
+    <>
+      <path d="M12 5v14" />
+      <path d="M5 12h14" />
     </>
   ),
   check: <path d="m5 12 4 4L19 6" />,

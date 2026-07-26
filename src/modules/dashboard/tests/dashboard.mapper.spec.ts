@@ -36,6 +36,7 @@ describe('DashboardMapper', () => {
       totalIncome: '1000.00',
       totalExpense: '350.50',
       totalInvestment: '0.00',
+      totalGoalContribution: '0.00',
       balance: '649.50',
       transactionCount: 3,
       goals: {

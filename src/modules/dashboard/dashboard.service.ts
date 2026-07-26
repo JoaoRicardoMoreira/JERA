@@ -25,14 +25,21 @@ export class DashboardServiceImpl implements DashboardService {
     query: DashboardQueryDto,
   ): Promise<MonthlySummaryResponseDto> {
     const period = this.toPeriod(userId, query);
-    const [totals, recurrenceTotals, investmentTotal, spendingByCategory, goals] =
-      await Promise.all([
-        this.dashboardRepository.getTransactionTotals(period),
-        this.dashboardRepository.getPendingRecurrenceTotals(period),
-        this.dashboardRepository.getInvestmentContributionTotal(period),
-        this.dashboardRepository.getSpendingByCategory(period),
-        this.dashboardRepository.getGoalsByPeriod(period),
-      ]);
+    const [
+      totals,
+      recurrenceTotals,
+      investmentTotal,
+      financialGoalContributionTotal,
+      spendingByCategory,
+      goals,
+    ] = await Promise.all([
+      this.dashboardRepository.getTransactionTotals(period),
+      this.dashboardRepository.getPendingRecurrenceTotals(period),
+      this.dashboardRepository.getInvestmentContributionTotal(period),
+      this.dashboardRepository.getFinancialGoalContributionTotal(period),
+      this.dashboardRepository.getSpendingByCategory(period),
+      this.dashboardRepository.getGoalsByPeriod(period),
+    ]);
     const charts = DashboardMapper.toCharts(period, spendingByCategory, goals);
 
     const projectedTotals = new DashboardTransactionTotalsEntity(
@@ -46,6 +53,7 @@ export class DashboardServiceImpl implements DashboardService {
       projectedTotals,
       charts.goalsByCategory,
       investmentTotal,
+      financialGoalContributionTotal,
     );
   }
 

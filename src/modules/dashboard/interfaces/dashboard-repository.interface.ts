@@ -12,6 +12,7 @@ export interface DashboardRepository {
   getTransactionTotals(period: DashboardPeriod): Promise<DashboardTransactionTotalsEntity>;
   getPendingRecurrenceTotals(period: DashboardPeriod): Promise<DashboardRecurrenceTotalsEntity>;
   getInvestmentContributionTotal(period: DashboardPeriod): Promise<string>;
+  getFinancialGoalContributionTotal(period: DashboardPeriod): Promise<string>;
   getSpendingByCategory(period: DashboardPeriod): Promise<DashboardCategorySpendingEntity[]>;
   getGoalsByPeriod(period: DashboardPeriod): Promise<DashboardGoalEntity[]>;
 }

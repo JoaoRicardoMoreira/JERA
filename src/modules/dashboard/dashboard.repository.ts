@@ -134,6 +134,23 @@ export class DashboardRepositoryImpl implements DashboardRepository {
     return new Prisma.Decimal(total._sum.amount ?? 0).toFixed(2);
   }
 
+  async getFinancialGoalContributionTotal(period: DashboardPeriod): Promise<string> {
+    const { periodStart, periodEnd } = this.getPeriodRange(period);
+    const total = await this.prisma.financialGoalContribution.aggregate({
+      where: {
+        userId: period.userId,
+        deletedAt: null,
+        contributedAt: {
+          gte: periodStart,
+          lt: periodEnd,
+        },
+      },
+      _sum: { amount: true },
+    });
+
+    return new Prisma.Decimal(total._sum.amount ?? 0).toFixed(2);
+  }
+
   async getSpendingByCategory(period: DashboardPeriod): Promise<DashboardCategorySpendingEntity[]> {
     const { periodStart, periodEnd } = this.getPeriodRange(period);
     const totals = await this.prisma.transaction.groupBy({

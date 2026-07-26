@@ -10,6 +10,7 @@ const empty: FinanceData = {
     totalIncome: '0',
     totalExpense: '0',
     totalInvestment: '0',
+    totalGoalContribution: '0',
     balance: '0',
     transactionCount: 0,
     goals: { totalGoalAmount: '0', progressPercentage: 0 },
@@ -39,7 +40,6 @@ type Context = {
   createFinancialGoal(input: {
     name: string;
     targetAmount: number;
-    currentAmount: number;
     targetDate?: string;
     category: FinancialGoalCategory;
   }): Promise<void>;
@@ -48,11 +48,11 @@ type Context = {
     input: Partial<{
       name: string;
       targetAmount: number;
-      currentAmount: number;
       targetDate: string;
       category: FinancialGoalCategory;
     }>,
   ): Promise<void>;
+  contributeToFinancialGoal(id: string, amount: number, contributedAt: string): Promise<void>;
   payPayable(id: string): Promise<void>;
   valuesVisible: boolean;
   toggleValues(): void;
@@ -206,7 +206,6 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             body: JSON.stringify({
               name: input.name,
               targetAmount: decimal(input.targetAmount),
-              currentAmount: decimal(input.currentAmount),
               targetDate: input.targetDate || undefined,
               category: input.category,
             }),
@@ -216,9 +215,18 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         mutate(() => {
           const body: Record<string, unknown> = { ...input };
           if (input.targetAmount !== undefined) body.targetAmount = decimal(input.targetAmount);
-          if (input.currentAmount !== undefined) body.currentAmount = decimal(input.currentAmount);
           return api(`/goals/${id}`, { method: 'PATCH', body: JSON.stringify(body) });
         }),
+      contributeToFinancialGoal: (id, amount, contributedAt) =>
+        mutate(() =>
+          api(`/goals/${id}/contributions`, {
+            method: 'POST',
+            body: JSON.stringify({
+              amount: decimal(amount),
+              contributedAt,
+            }),
+          }),
+        ),
       payPayable: (id) => mutate(() => api(`/payables/${id}/pay`, { method: 'PATCH' })),
       valuesVisible,
       toggleValues: () => setValuesVisible((visible) => !visible),

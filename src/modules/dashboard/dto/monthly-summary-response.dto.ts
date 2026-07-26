@@ -44,6 +44,10 @@ export class MonthlySummaryResponseDto {
   @Expose()
   totalInvestment: string;
 
+  @ApiProperty({ example: '500.00' })
+  @Expose()
+  totalGoalContribution: string;
+
   @ApiProperty({ example: '2500.00' })
   @Expose()
   balance: string;

@@ -428,10 +428,19 @@ export default function Dashboard() {
               );
             })}
             {!data.financialGoals.length && (
-              <Link href="/metas" className="goal-card new-goal">
-                <span>+</span>
-                <h3>Crie sua primeira meta</h3>
-                <p>Transforme um plano em uma jornada mensurável.</p>
+              <Link href="/metas" className="goal-card new-goal new-goal-themed">
+                <span className="new-goal-art" aria-hidden="true">
+                  <Image src="/brand/jera-goal-other.jpg" fill sizes="520px" alt="" />
+                </span>
+                <span className="new-goal-rune" aria-hidden="true">
+                  ᛟ
+                </span>
+                <small>Primeiro destino</small>
+                <h3>Trace sua primeira conquista</h3>
+                <p>Todo grande caminho começa com uma meta clara e o primeiro aporte.</p>
+                <b>
+                  Criar meta <span aria-hidden="true">→</span>
+                </b>
               </Link>
             )}
           </div>

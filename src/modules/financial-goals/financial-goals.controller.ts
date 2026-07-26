@@ -15,7 +15,11 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { RequestUser } from '../../common/interfaces/request-user.interface';
 import { Permission } from '../auth/entities/permission.enum';
-import { CreateFinancialGoalDto, UpdateFinancialGoalDto } from './dto/financial-goal.dto';
+import {
+  CreateFinancialGoalContributionDto,
+  CreateFinancialGoalDto,
+  UpdateFinancialGoalDto,
+} from './dto/financial-goal.dto';
 import { FinancialGoalsService } from './financial-goals.service';
 
 @ApiTags('Financial goals')
@@ -34,6 +38,22 @@ export class FinancialGoalsController {
   @Permissions(Permission.FINANCIAL_GOALS_MANAGE)
   create(@CurrentUser() user: RequestUser, @Body() dto: CreateFinancialGoalDto) {
     return this.service.create(user.id, dto);
+  }
+
+  @Get(':id/contributions')
+  @Permissions(Permission.FINANCIAL_GOALS_MANAGE)
+  listContributions(@CurrentUser() user: RequestUser, @Param('id', ParseUUIDPipe) id: string) {
+    return this.service.listContributions(user.id, id);
+  }
+
+  @Post(':id/contributions')
+  @Permissions(Permission.FINANCIAL_GOALS_MANAGE)
+  contribute(
+    @CurrentUser() user: RequestUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateFinancialGoalContributionDto,
+  ) {
+    return this.service.contribute(user.id, id, dto);
   }
 
   @Patch(':id')

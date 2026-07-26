@@ -59,11 +59,6 @@ export class UpdateFinancialGoalDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsNumberString()
-  currentAmount?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
   @IsDateString()
   targetDate?: string;
 
@@ -82,6 +77,25 @@ export class UpdateFinancialGoalDto {
   @IsOptional()
   @IsIn(Object.values(FinancialGoalStatus))
   status?: FinancialGoalStatus;
+}
+
+export class CreateFinancialGoalContributionDto {
+  @ApiProperty({ example: '500.00' })
+  @IsNumberString()
+  amount: string;
+
+  @ApiPropertyOptional({ example: '2026-07-26' })
+  @IsOptional()
+  @IsDateString()
+  contributedAt?: string;
+}
+
+export class FinancialGoalContributionResponseDto {
+  @Expose() id: string;
+  @Expose() financialGoalId: string;
+  @Expose() amount: string;
+  @Expose() contributedAt: string;
+  @Expose() createdAt: string;
 }
 
 export class FinancialGoalResponseDto {

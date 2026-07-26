@@ -15,10 +15,12 @@ export class DashboardMapper {
     totals: DashboardTransactionTotalsEntity,
     goals: GoalChartItemDto[],
     totalInvestment = '0.00',
+    totalGoalContribution = '0.00',
   ): MonthlySummaryResponseDto {
     const totalIncome = new Prisma.Decimal(totals.totalIncome);
     const totalExpense = new Prisma.Decimal(totals.totalExpense);
     const investment = new Prisma.Decimal(totalInvestment);
+    const goalContribution = new Prisma.Decimal(totalGoalContribution);
     const totalGoalAmount = goals.reduce(
       (sum, goal) => sum.plus(goal.goalAmount),
       new Prisma.Decimal(0),
@@ -41,7 +43,8 @@ export class DashboardMapper {
       totalIncome: totalIncome.toFixed(2),
       totalExpense: totalExpense.toFixed(2),
       totalInvestment: investment.toFixed(2),
-      balance: totalIncome.minus(totalExpense).minus(investment).toFixed(2),
+      totalGoalContribution: goalContribution.toFixed(2),
+      balance: totalIncome.minus(totalExpense).minus(investment).minus(goalContribution).toFixed(2),
       transactionCount: totals.transactionCount,
       goals: {
         totalGoalAmount: totalGoalAmount.toFixed(2),

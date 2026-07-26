@@ -44,6 +44,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         >
           <Icon name="menu" />
         </button>
+        <Link href="/dashboard" className="mobile-brand" aria-label="Ir para o Dashboard">
+          <Image src="/brand/jera-mark-reference.png" alt="" width={28} height={28} priority />
+          <span>Jera</span>
+        </Link>
         {open && (
           <button
             className="sidebar-backdrop"

@@ -25,6 +25,7 @@ describe('DashboardService', () => {
       getTransactionTotals: jest.fn(),
       getPendingRecurrenceTotals: jest.fn(),
       getInvestmentContributionTotal: jest.fn(),
+      getFinancialGoalContributionTotal: jest.fn(),
       getSpendingByCategory: jest.fn(),
       getGoalsByPeriod: jest.fn(),
     };
@@ -44,6 +45,7 @@ describe('DashboardService', () => {
       new DashboardRecurrenceTotalsEntity('0.00', '0.00', 0),
     );
     repository.getInvestmentContributionTotal.mockResolvedValue('0.00');
+    repository.getFinancialGoalContributionTotal.mockResolvedValue('0.00');
   });
 
   it('includes unprocessed recurrences in the monthly projected balance', async () => {
@@ -91,6 +93,7 @@ describe('DashboardService', () => {
       totalIncome: '7000.00',
       totalExpense: '4500.00',
       totalInvestment: '0.00',
+      totalGoalContribution: '0.00',
       balance: '2500.00',
       transactionCount: 8,
       goals: {
@@ -118,6 +121,20 @@ describe('DashboardService', () => {
 
     expect(response.totalInvestment).toBe('2000.00');
     expect(response.balance).toBe('1000.00');
+  });
+
+  it('debits financial goal contributions from the available balance', async () => {
+    repository.getTransactionTotals.mockResolvedValue(
+      new DashboardTransactionTotalsEntity('5000.00', '2000.00', 2),
+    );
+    repository.getFinancialGoalContributionTotal.mockResolvedValue('500.00');
+    repository.getSpendingByCategory.mockResolvedValue([]);
+    repository.getGoalsByPeriod.mockResolvedValue([]);
+
+    const response = await service.getMonthlySummary(userId, query);
+
+    expect(response.totalGoalContribution).toBe('500.00');
+    expect(response.balance).toBe('2500.00');
   });
 
   it('should return chart payload with spending percentages and goal progress', async () => {

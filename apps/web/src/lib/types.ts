@@ -35,6 +35,7 @@ export interface Summary {
   totalIncome: string;
   totalExpense: string;
   totalInvestment: string;
+  totalGoalContribution: string;
   balance: string;
   transactionCount: number;
   goals: { totalGoalAmount: string; progressPercentage: number };
@@ -62,6 +63,13 @@ export interface FinancialGoal {
   icon: string | null;
   category: FinancialGoalCategory;
   status: 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+}
+export interface FinancialGoalContribution {
+  id: string;
+  financialGoalId: string;
+  amount: string;
+  contributedAt: string;
+  createdAt: string;
 }
 export interface Payable {
   id: string;
