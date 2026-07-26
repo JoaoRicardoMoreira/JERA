@@ -16,9 +16,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [sessionReady, setSessionReady] = useState(false);
+
   useEffect(() => {
-    if (!session.get()) router.replace('/login');
+    if (!session.get()) {
+      router.replace('/login');
+      return;
+    }
+
+    setSessionReady(true);
   }, [router]);
+
+  if (!sessionReady) return null;
+
   return (
     <FinanceProvider>
       <div className="shell">
