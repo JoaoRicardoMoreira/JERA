@@ -1,5 +1,7 @@
 import { PrismaClient, Role, TransactionType } from '@prisma/client';
 
+import { DEFAULT_CATEGORIES } from '../src/modules/categories/default-categories';
+
 const prisma = new PrismaClient();
 
 const DEV_USER_EMAIL = process.env.SEED_USER_EMAIL ?? 'dev@financecontrol.local';
@@ -16,22 +18,9 @@ const defaultPermissions = [
   'investments:manage',
 ];
 
-const defaultCategories: Array<{ name: string; type: TransactionType }> = [
-  { name: 'Salario', type: TransactionType.INCOME },
-  { name: 'Freelance', type: TransactionType.INCOME },
-  { name: 'Investimentos', type: TransactionType.INCOME },
-  { name: 'Alimentacao', type: TransactionType.EXPENSE },
-  { name: 'Moradia', type: TransactionType.EXPENSE },
-  { name: 'Transporte', type: TransactionType.EXPENSE },
-  { name: 'Saude', type: TransactionType.EXPENSE },
-  { name: 'Educacao', type: TransactionType.EXPENSE },
-  { name: 'Lazer', type: TransactionType.EXPENSE },
-  { name: 'Outros', type: TransactionType.EXPENSE },
-];
-
 async function ensureDefaultCategories(userId: string) {
   return Promise.all(
-    defaultCategories.map((category) =>
+    DEFAULT_CATEGORIES.map((category) =>
       prisma.category.upsert({
         where: {
           userId_name_type: {

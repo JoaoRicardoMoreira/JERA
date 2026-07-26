@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
+import { DEFAULT_CATEGORIES } from '../categories/default-categories';
 import { UserEntity } from '../users/entities/user.entity';
 import { UserMapper } from '../users/mapper/user.mapper';
 import { AuthMapper } from './mapper/auth.mapper';
@@ -17,7 +18,12 @@ export class PrismaAuthRepository implements AuthRepository {
 
   async createUser(input: CreateAuthUserInput): Promise<UserEntity> {
     const user = await this.prisma.user.create({
-      data: input,
+      data: {
+        ...input,
+        categories: {
+          create: DEFAULT_CATEGORIES.map((category) => ({ ...category })),
+        },
+      },
     });
 
     return UserMapper.toEntity(user);
