@@ -13,6 +13,7 @@ export type IconName =
   | 'nordicGoalEmergency'
   | 'nordicGoalOther'
   | 'nordicDashboard'
+  | 'nordicCycle'
   | 'nordicSettlement'
   | 'nordicGoals'
   | 'nordicBudget'
@@ -137,6 +138,13 @@ const paths: Record<IconName, React.ReactNode> = {
       <path d="M12 3v7M12 14v7M3 12h7M14 12h7" />
       <path d="m5 5 5 5m4 4 5 5M19 5l-5 5m-4 4-5 5" />
       <path d="m9 3 3 2 3-2M21 9l-2 3 2 3M15 21l-3-2-3 2M3 15l2-3-2-3" />
+    </>
+  ),
+  nordicCycle: (
+    <>
+      <circle cx="12" cy="12" r="8" />
+      <path d="M12 4v5l4 3-4 3v5" />
+      <path d="m8 7 4 2-4 2M16 13l-4 2 4 2" />
     </>
   ),
   nordicSettlement: (

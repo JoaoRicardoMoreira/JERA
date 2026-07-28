@@ -186,12 +186,12 @@ export default function Dashboard() {
             />
           </div>
           <div className="hero-copy">
-            <span className="eyebrow">Saldo disponível</span>
+            <span className="eyebrow">Saldo projetado do ciclo</span>
             <h1>{showMoney(summary.balance)}</h1>
             <Variation value={variation(Number(summary.balance), Number(previous?.balance || 0))} />
-            <p>Atualizado agora · visão projetada do mês</p>
-            <Link href="/gastos" className="button glass">
-              Ver detalhes <span>→</span>
+            <p>Estimativa para o fim do mês · o disponível de hoje está no Mapa do Ciclo</p>
+            <Link href="/ciclo" className="button glass">
+              Ver mapa <span>→</span>
             </Link>
           </div>
         </section>

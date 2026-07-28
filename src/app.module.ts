@@ -13,6 +13,7 @@ import swaggerConfig from './config/swagger.config';
 import { PrismaModule } from './database/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CategoriesModule } from './modules/categories/categories.module';
+import { CyclesModule } from './modules/cycles/cycles.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { GoalsModule } from './modules/goals/goals.module';
 import { FinancialGoalsModule } from './modules/financial-goals/financial-goals.module';
@@ -50,6 +51,7 @@ import { UsersModule } from './modules/users/users.module';
     AuthModule,
     UsersModule,
     CategoriesModule,
+    CyclesModule,
     TransactionsModule,
     GoalsModule,
     FinancialGoalsModule,

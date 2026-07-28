@@ -11,6 +11,7 @@ import { session } from '@/lib/api';
 const links = [
   ['/assentamento', 'nordicSettlement', 'Meu Assentamento', 'ᛟ'],
   ['/dashboard', 'nordicDashboard', 'Dashboard', 'ᚨ'],
+  ['/ciclo', 'nordicCycle', 'Meu Ciclo', 'ᛃ'],
   ['/rendas', 'nordicIncome', 'Receitas', 'ᚠ'],
   ['/gastos', 'nordicExpense', 'Despesas', 'ᚾ'],
   ['/investimentos', 'nordicInvestment', 'Investimentos', 'ᛒ'],
@@ -18,7 +19,7 @@ const links = [
   ['/orcamentos', 'nordicBudget', 'Orçamentos', 'ᛟ'],
   ['/recorrentes', 'nordicRepeat', 'Recorrências', 'ᛃ'],
 ] as const;
-const navigationLinks = [links[1], links[0], ...links.slice(2)];
+const navigationLinks = [links[1], links[0], links[2], ...links.slice(3)];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const path = usePathname();

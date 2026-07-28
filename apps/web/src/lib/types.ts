@@ -186,3 +186,57 @@ export interface SettlementOverview {
   }[];
   reconstructedAt: string;
 }
+
+export type CycleEventType = 'INCOME' | 'EXPENSE' | 'INVESTMENT' | 'GOAL';
+export interface CycleOverview {
+  map: {
+    month: number;
+    year: number;
+    asOfDate: string;
+    availableBalance: string;
+    projectedBalance: string;
+    projectedIncome: string;
+    projectedExpense: string;
+    totalInvestment: string;
+    totalGoalContribution: string;
+    lowestBalance: string;
+    lowestBalanceDate: string;
+    daysAtRisk: number;
+    events: {
+      id: string;
+      type: CycleEventType;
+      status: 'REALIZED' | 'PLANNED' | 'OVERDUE';
+      date: string;
+      day: number;
+      title: string;
+      categoryName: string | null;
+      amount: string;
+      balanceAfter: string;
+    }[];
+    points: {
+      day: number;
+      date: string;
+      projectedBalance: string;
+      realizedBalance: string | null;
+      income: string;
+      expense: string;
+    }[];
+  };
+  closing: {
+    available: boolean;
+    reviewedAt: string | null;
+    realizedIncome: string;
+    realizedExpense: string;
+    investedAmount: string;
+    goalContributionAmount: string;
+    endingBalance: string;
+    balanceDelta: string;
+    savingsRate: number;
+    budgetCount: number;
+    respectedBudgetCount: number;
+    completedGoals: number;
+    completedJourneys: number;
+    achievements: string[];
+    message: string;
+  };
+}
