@@ -125,7 +125,8 @@ export default function Page() {
               src="/brand/jera-card-investments.jpg"
               fill
               priority
-              sizes="(max-width: 800px) 100vw, 80vw"
+              sizes="(max-width: 800px) 140vw, 80vw"
+              quality={92}
               alt=""
             />
           </div>

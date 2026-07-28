@@ -138,35 +138,38 @@ export default function SettlementPage() {
         <section
           className={`settlement-hero settlement-world settlement-atmosphere-${overview.atmosphere.state.toLowerCase()}`}
         >
-          <Image
-            src={`/brand/settlement/jera-settlement-${overview.stage.assetKey}.png`}
-            alt={`Panorama do assentamento no estágio ${overview.stage.label}`}
-            fill
-            sizes="(max-width: 900px) 100vw, 1480px"
-            priority
-          />
-          <div className="settlement-weather" aria-hidden="true" />
-          <div className="settlement-hero-shade" aria-hidden="true" />
-          <div className="settlement-structure-layer">
-            {getSettlementHotspots(overview.stage.assetKey).map((hotspot) => {
-              const district = overview.districts.find(({ key }) => key === hotspot.key);
+          <div className="settlement-world-scene">
+            <Image
+              src={`/brand/settlement/jera-settlement-${overview.stage.assetKey}.png`}
+              alt={`Panorama do assentamento no estágio ${overview.stage.label}`}
+              fill
+              sizes="(max-width: 800px) 140vw, 1480px"
+              quality={95}
+              priority
+            />
+            <div className="settlement-weather" aria-hidden="true" />
+            <div className="settlement-hero-shade" aria-hidden="true" />
+            <div className="settlement-structure-layer">
+              {getSettlementHotspots(overview.stage.assetKey).map((hotspot) => {
+                const district = overview.districts.find(({ key }) => key === hotspot.key);
 
-              return (
-                <button
-                  key={hotspot.key}
-                  type="button"
-                  className="settlement-structure-hitbox"
-                  style={{
-                    left: `${hotspot.x}%`,
-                    top: `${hotspot.y}%`,
-                    width: `${hotspot.width}%`,
-                    height: `${hotspot.height}%`,
-                  }}
-                  onClick={() => setSelectedDistrictKey(hotspot.key)}
-                  aria-label={`Abrir ${district?.label ?? 'estrutura do assentamento'}`}
-                />
-              );
-            })}
+                return (
+                  <button
+                    key={hotspot.key}
+                    type="button"
+                    className="settlement-structure-hitbox"
+                    style={{
+                      left: `${hotspot.x}%`,
+                      top: `${hotspot.y}%`,
+                      width: `${hotspot.width}%`,
+                      height: `${hotspot.height}%`,
+                    }}
+                    onClick={() => setSelectedDistrictKey(hotspot.key)}
+                    aria-label={`Abrir ${district?.label ?? 'estrutura do assentamento'}`}
+                  />
+                );
+              })}
+            </div>
           </div>
 
           <article className="settlement-world-status">

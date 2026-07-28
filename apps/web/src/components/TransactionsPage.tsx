@@ -54,7 +54,8 @@ export function TransactionsPage({ type }: { type: TransactionType }) {
                 src="/brand/jera-card-income.jpg"
                 fill
                 priority
-                sizes="(max-width: 800px) 100vw, 80vw"
+                sizes="(max-width: 800px) 140vw, 80vw"
+                quality={92}
                 alt=""
               />
             </div>
@@ -85,7 +86,8 @@ export function TransactionsPage({ type }: { type: TransactionType }) {
                 src="/brand/jera-card-expenses.jpg"
                 fill
                 priority
-                sizes="(max-width: 800px) 100vw, 80vw"
+                sizes="(max-width: 800px) 140vw, 80vw"
+                quality={92}
                 alt=""
               />
             </div>

@@ -95,6 +95,9 @@ export function PageChrome({
         <div className="header-actions">
           {showPeriodControls && (
             <div className="period-controls">
+              <span className="period-rune" aria-hidden="true">
+                ᛃ
+              </span>
               <label className="period-select">
                 <span className="sr-only">Mês</span>
                 <select
@@ -108,14 +111,18 @@ export function PageChrome({
                   ))}
                 </select>
               </label>
-              <input
-                aria-label="Ano"
-                type="number"
-                min="2000"
-                max="2100"
-                value={year}
-                onChange={(event) => setPeriod(month, Number(event.target.value))}
-              />
+              <span className="period-divider" aria-hidden="true" />
+              <label className="period-year">
+                <span className="sr-only">Ano</span>
+                <input
+                  aria-label="Ano"
+                  type="number"
+                  min="2000"
+                  max="2100"
+                  value={year}
+                  onChange={(event) => setPeriod(month, Number(event.target.value))}
+                />
+              </label>
             </div>
           )}
           <div className="header-primary-actions">
