@@ -63,6 +63,31 @@ enum PayableOrigin {
   RECURRENCE
 }
 
+enum SettlementAtmosphere {
+  FAVORABLE
+  SERENE
+  ATTENTION
+}
+
+enum SettlementJourneyType {
+  GROW_PATRIMONY
+  SAVE_INCOME
+  PAY_BILLS
+  INVEST
+  CONTRIBUTE_GOAL
+}
+
+enum SettlementJourneyStatus {
+  ACTIVE
+  COMPLETED
+  EXPIRED
+}
+
+enum SettlementJourneyUnit {
+  CURRENCY
+  COUNT
+}
+
 model User {
   id           String    @id @default(uuid()) @db.Uuid
   name         String    @db.VarChar(120)
@@ -91,6 +116,9 @@ model User {
   payables                   Payable[]
   investmentConfig           InvestmentConfig?
   investmentContributions    InvestmentContribution[]
+  settlementProfile          SettlementProfile?
+  settlementSnapshots        SettlementMonthlySnapshot[]
+  settlementJourneys         SettlementJourney[]
 
   @@map("users")
 }
@@ -300,4 +328,76 @@ model Payable {
   @@index([userId, status, dueDate], map: "idx_payables_user_status_due_date")
   @@index([categoryId], map: "idx_payables_category_id")
   @@map("payables")
+}
+
+model SettlementProfile {
+  id              String    @id @default(uuid()) @db.Uuid
+  userId          String    @unique @map("user_id") @db.Uuid
+  rulesVersion    Int       @default(1) @map("rules_version")
+  reconstructedAt DateTime? @map("reconstructed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("settlement_profiles")
+}
+
+model SettlementMonthlySnapshot {
+  id                   String               @id @default(uuid()) @db.Uuid
+  userId               String               @map("user_id") @db.Uuid
+  month                Int
+  year                 Int
+  totalIncome          Decimal              @map("total_income") @db.Decimal(14, 2)
+  totalExpense         Decimal              @map("total_expense") @db.Decimal(14, 2)
+  availableBalance     Decimal              @map("available_balance") @db.Decimal(14, 2)
+  investmentValue      Decimal              @map("investment_value") @db.Decimal(14, 2)
+  goalReserveValue     Decimal              @map("goal_reserve_value") @db.Decimal(14, 2)
+  totalPatrimony       Decimal              @map("total_patrimony") @db.Decimal(14, 2)
+  developmentPoints    Int                  @default(0) @map("development_points")
+  hallPoints           Int                  @default(0) @map("hall_points")
+  granaryPoints        Int                  @default(0) @map("granary_points")
+  harborPoints         Int                  @default(0) @map("harbor_points")
+  marketPoints         Int                  @default(0) @map("market_points")
+  palisadePoints       Int                  @default(0) @map("palisade_points")
+  achievementPoints    Int                  @default(0) @map("achievement_points")
+  lighthousePoints     Int                  @default(0) @map("lighthouse_points")
+  atmosphere           SettlementAtmosphere @default(SERENE)
+  atmosphereReason     String               @map("atmosphere_reason") @db.VarChar(180)
+  isClosed             Boolean              @default(false) @map("is_closed")
+  rulesVersion         Int                  @default(1) @map("rules_version")
+  createdAt            DateTime             @default(now()) @map("created_at")
+  updatedAt            DateTime             @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, year, month], map: "uq_settlement_snapshots_user_period")
+  @@index([userId, year, month], map: "idx_settlement_snapshots_user_period")
+  @@map("settlement_monthly_snapshots")
+}
+
+model SettlementJourney {
+  id            String                  @id @default(uuid()) @db.Uuid
+  userId        String                  @map("user_id") @db.Uuid
+  month         Int
+  year          Int
+  slot          Int
+  type          SettlementJourneyType
+  unit          SettlementJourneyUnit
+  title         String                  @db.VarChar(120)
+  description   String                  @db.VarChar(255)
+  baselineValue Decimal                 @default(0) @map("baseline_value") @db.Decimal(14, 2)
+  targetValue   Decimal                 @map("target_value") @db.Decimal(14, 2)
+  currentValue  Decimal                 @default(0) @map("current_value") @db.Decimal(14, 2)
+  isPrimary     Boolean                 @default(false) @map("is_primary")
+  status        SettlementJourneyStatus @default(ACTIVE)
+  completedAt   DateTime?               @map("completed_at")
+  createdAt     DateTime                @default(now()) @map("created_at")
+  updatedAt     DateTime                @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, year, month, slot], map: "uq_settlement_journeys_user_period_slot")
+  @@index([userId, status], map: "idx_settlement_journeys_user_status")
+  @@map("settlement_journeys")
 }

@@ -9,6 +9,7 @@ import { Icon } from './Icon';
 import { session } from '@/lib/api';
 
 const links = [
+  ['/assentamento', 'nordicSettlement', 'Meu Assentamento', 'ᛟ'],
   ['/dashboard', 'nordicDashboard', 'Dashboard', 'ᚨ'],
   ['/rendas', 'nordicIncome', 'Receitas', 'ᚠ'],
   ['/gastos', 'nordicExpense', 'Despesas', 'ᚾ'],
@@ -17,6 +18,7 @@ const links = [
   ['/orcamentos', 'nordicBudget', 'Orçamentos', 'ᛟ'],
   ['/recorrentes', 'nordicRepeat', 'Recorrências', 'ᛃ'],
 ] as const;
+const navigationLinks = [links[1], links[0], ...links.slice(2)];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
@@ -76,7 +78,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <small>Rotas da jornada</small>
           </div>
           <nav aria-label="Navegação principal">
-            {links.map(([href, icon, label, rune]) => (
+            {navigationLinks.map(([href, icon, label, rune]) => (
               <Link
                 key={href}
                 href={href}

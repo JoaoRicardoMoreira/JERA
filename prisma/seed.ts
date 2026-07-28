@@ -18,6 +18,7 @@ const defaultPermissions = [
   'dashboard:read',
   'investments:read',
   'investments:manage',
+  'settlement:read',
 ];
 
 async function ensureDefaultCategories(userId: string) {

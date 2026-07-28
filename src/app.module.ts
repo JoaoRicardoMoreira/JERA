@@ -21,6 +21,7 @@ import { ImportExportModule } from './modules/import-export/import-export.module
 import { InvestmentsModule } from './modules/investments/investments.module';
 import { PayablesModule } from './modules/payables/payables.module';
 import { RecurrencesModule } from './modules/recurrences/recurrences.module';
+import { SettlementModule } from './modules/settlement/settlement.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { UsersModule } from './modules/users/users.module';
 
@@ -56,6 +57,7 @@ import { UsersModule } from './modules/users/users.module';
     DashboardModule,
     InvestmentsModule,
     PayablesModule,
+    SettlementModule,
     ImportExportModule,
   ],
   providers: [

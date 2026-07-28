@@ -27,10 +27,12 @@ export function PageChrome({
   title,
   subtitle,
   action,
+  showPeriodControls = true,
 }: {
   title?: string;
   subtitle?: string;
   action?: React.ReactNode;
+  showPeriodControls?: boolean;
 }) {
   const { month, year, setPeriod, loading, error, valuesVisible, toggleValues, data } =
     useFinance();
@@ -91,29 +93,31 @@ export function PageChrome({
           </p>
         </div>
         <div className="header-actions">
-          <div className="period-controls">
-            <label className="period-select">
-              <span className="sr-only">Mês</span>
-              <select
-                value={month}
-                onChange={(event) => setPeriod(Number(event.target.value), year)}
-              >
-                {months.map((label, index) => (
-                  <option value={index + 1} key={label}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <input
-              aria-label="Ano"
-              type="number"
-              min="2000"
-              max="2100"
-              value={year}
-              onChange={(event) => setPeriod(month, Number(event.target.value))}
-            />
-          </div>
+          {showPeriodControls && (
+            <div className="period-controls">
+              <label className="period-select">
+                <span className="sr-only">Mês</span>
+                <select
+                  value={month}
+                  onChange={(event) => setPeriod(Number(event.target.value), year)}
+                >
+                  {months.map((label, index) => (
+                    <option value={index + 1} key={label}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <input
+                aria-label="Ano"
+                type="number"
+                min="2000"
+                max="2100"
+                value={year}
+                onChange={(event) => setPeriod(month, Number(event.target.value))}
+              />
+            </div>
+          )}
           <div className="header-primary-actions">
             <button
               className="icon-button"

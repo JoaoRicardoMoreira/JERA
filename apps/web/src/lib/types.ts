@@ -139,3 +139,50 @@ export interface FinanceData {
   investment: InvestmentOverview | null;
   previousSummary: Summary | null;
 }
+
+export interface SettlementOverview {
+  stage: {
+    key: string;
+    label: string;
+    points: number;
+    progressPercentage: number;
+    microMilestone: number;
+    nextStageLabel: string | null;
+    pointsToNextStage: number;
+    assetKey: string;
+  };
+  atmosphere: {
+    state: 'FAVORABLE' | 'SERENE' | 'ATTENTION';
+    reason: string;
+  };
+  patrimony: string;
+  patrimonyDelta: string;
+  availableBalance: string;
+  investmentValue: string;
+  goalReserveValue: string;
+  fenrirMessage: string;
+  nextExpansion: string;
+  districts: {
+    key: string;
+    label: string;
+    description: string;
+    points: number;
+    level: number;
+    progressPercentage: number;
+  }[];
+  journeys: {
+    id: string;
+    type: 'GROW_PATRIMONY' | 'SAVE_INCOME' | 'PAY_BILLS' | 'INVEST' | 'CONTRIBUTE_GOAL';
+    unit: 'CURRENCY' | 'COUNT';
+    title: string;
+    description: string;
+    baselineValue: string;
+    targetValue: string;
+    currentValue: string;
+    progressPercentage: number;
+    isPrimary: boolean;
+    status: 'ACTIVE' | 'COMPLETED' | 'EXPIRED';
+    completedAt: string | null;
+  }[];
+  reconstructedAt: string;
+}

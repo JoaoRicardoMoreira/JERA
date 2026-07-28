@@ -10,6 +10,7 @@ export const Permission = {
   DASHBOARD_READ: 'dashboard:read',
   INVESTMENTS_READ: 'investments:read',
   INVESTMENTS_MANAGE: 'investments:manage',
+  SETTLEMENT_READ: 'settlement:read',
 } as const;
 
 export type Permission = (typeof Permission)[keyof typeof Permission];
