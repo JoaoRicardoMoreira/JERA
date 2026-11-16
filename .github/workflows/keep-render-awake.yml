@@ -2,8 +2,8 @@ name: Keep Render API awake
 
 on:
   schedule:
-    # Run with margin: GitHub scheduled workflows can start a little late.
-    - cron: '*/10 * * * *'
+    # Offset from the top of the hour to reduce GitHub Actions queue delays.
+    - cron: '3/10 * * * *'
   workflow_dispatch:
 
 jobs:
